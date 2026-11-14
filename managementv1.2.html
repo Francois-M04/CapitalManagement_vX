@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/jpeg" href="logo.png">
+    <title>Capital Management — Pro UI</title>
+    <style>
+        /* =========================================================
+           DESIGN SYSTEM (Inspiré de l'interface Zouti Trader)
+           ========================================================= */
+        :root {
+            --bg-app: #080d17; /* Fond très sombre */
+            --bg-panel: #101827; /* Fond des panneaux */
+            --bg-panel-light: #1a2436;
+            --bg-input: #080d17;
+            
+            --border: #1f2b3e;
+            --border-light: #2d3b55;
+            
+            --text-main: #f8fafc;
+            --text-muted: #8b9bb4;
+            --text-dark: #0f172a;
+            
+            --blue-accent: #3b82f6;
+            --blue-hover: #2563eb;
+            --blue-bg: rgba(59, 130, 246, 0.15);
+            
+            --green-accent: #10b981;
+            --green-hover: #059669;
+            --green-bg: rgba(16, 185, 129, 0.15);
+            
+            --red-accent: #ef4444;
+            --red-hover: #dc2626;
+            --red-bg: rgba(239, 68, 68, 0.15);
+            
+            --orange-accent: #f59e0b;
+            --orange-bg: rgba(245, 158, 11, 0.15);
+
+            --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-app);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.5;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-app); }
+        ::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 4px; }
+
+        /* =========================================================
+           HEADER & NAVIGATION
+           ========================================================= */
+        header {
+            background: var(--bg-panel);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .header-inner {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .brand-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--blue-accent), #1e3a8a);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .brand-icon svg { width: 20px; height: 20px; fill: #fff; }
+        .brand-title h1 { font-size: 1rem; font-weight: 800; letter-spacing: -0.02em; }
+        .brand-status {
+            font-size: 0.7rem;
+            color: var(--green-accent);
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-weight: 600;
+        }
+        .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green-accent); }
+
+        .nav-tabs {
+            display: flex;
+            background: var(--bg-app);
+            padding: 0.25rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            flex-grow: 1;
+            max-width: 400px;
+        }
+        .tab-btn {
+            flex: 1;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            padding: 0.5rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+        }
+        .tab-btn.active {
+            background: var(--bg-panel);
+            color: var(--text-main);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        }
+
+        .header-actions { display: flex; gap: 0.5rem; }
+        .icon-btn {
+            background: var(--bg-app);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .icon-btn:hover { color: var(--text-main); border-color: var(--border-light); }
+
+        /* =========================================================
+           LAYOUT & CARTES
+           ========================================================= */
+        main {
+            max-width: 1000px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 1.5rem 1rem 4rem;
+            flex-grow: 1;
+        }
+        .hidden { display: none !important; }
+
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+        .grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+        
+        @media (max-width: 768px) {
+            .grid-4 { grid-template-columns: repeat(2, 1fr); }
+            .grid-layout { grid-template-columns: 1fr; }
+            .nav-tabs { max-width: none; }
+        }
+
+        .panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+        }
+        
+        .label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: block;
+            margin-bottom: 0.3rem;
+        }
+        
+        .value-huge { font-size: 2.2rem; font-weight: 900; letter-spacing: -0.03em; }
+        .value-medium { font-size: 1.25rem; font-weight: 800; letter-spacing: -0.02em; }
+        .value-small { font-size: 0.9rem; font-weight: 700; }
+
+        .text-green { color: var(--green-accent); }
+        .text-red { color: var(--red-accent); }
+        .text-blue { color: var(--blue-accent); }
+        .text-orange { color: var(--orange-accent); }
+
+        /* Inputs & Selects */
+        .input-group {
+            background: var(--bg-app);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.6rem 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .input-group input, .input-group select {
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-size: 1.1rem;
+            font-weight: 800;
+            width: 100%;
+            outline: none;
+            font-family: inherit;
+        }
+        .input-group input[type="number"] { -moz-appearance: textfield; }
+        .input-group span { color: var(--text-muted); font-size: 0.85rem; font-weight: 600; }
+
+        /* Boutons */
+        .btn {
+            border: none;
+            padding: 0.85rem 1rem;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+        }
+        .btn:active { transform: scale(0.98); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .btn-green { background: var(--green-accent); color: var(--text-dark); }
+        .btn-green:hover:not(:disabled) { background: var(--green-hover); }
+        
+        .btn-red { background: var(--red-accent); color: #fff; }
+        .btn-red:hover:not(:disabled) { background: var(--red-hover); }
+        
+        .btn-blue { background: var(--blue-accent); color: #fff; }
+        .btn-blue:hover:not(:disabled) { background: var(--blue-hover); }
+        
+        .btn-outline { background: transparent; border: 1px solid var(--border-light); color: var(--text-main); }
+        .btn-outline:hover:not(:disabled) { background: var(--bg-panel-light); }
+
+        /* =========================================================
+           MODULE 1: SESSION TRADER
+           ========================================================= */
+        .next-trade-box {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem 1rem;
+            text-align: center;
+            margin-bottom: 0.75rem;
+        }
+        
+        .trades-dots {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.4rem;
+            margin-bottom: 0.75rem;
+        }
+        .trade-dot {
+            flex: 1;
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 0.4rem;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+        .trade-dot.active { border-color: var(--blue-accent); color: var(--text-main); box-shadow: inset 0 0 0 1px var(--blue-accent); }
+        .trade-dot.win { border-color: var(--green-accent); color: var(--green-accent); background: var(--green-bg); }
+        .trade-dot.loss { border-color: var(--red-accent); color: var(--red-accent); background: var(--red-bg); }
+
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 1rem; }
+        .stat-cell { background: var(--bg-panel); padding: 0.85rem; }
+        .stat-cell .label { margin-bottom: 0.2rem; }
+
+        .action-buttons { display: flex; gap: 0.75rem; margin-bottom: 1rem; }
+        
+        .alert-box {
+            background: var(--orange-bg);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: var(--orange-accent);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        /* Table */
+        .table-container { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; }
+        th { background: var(--bg-app); color: var(--text-muted); font-size: 0.7rem; text-transform: uppercase; padding: 0.6rem 0.8rem; border-bottom: 1px solid var(--border); }
+        td { padding: 0.65rem 0.8rem; border-bottom: 1px solid var(--border); }
+        tr:last-child td { border-bottom: none; }
+        tr.active-row { background: var(--blue-bg); }
+
+        /* Logs */
+        .log-list { display: flex; flex-direction: column; gap: 0.5rem; max-height: 250px; overflow-y: auto; }
+        .log-item { background: var(--bg-app); border: 1px solid var(--border); padding: 0.6rem 0.8rem; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; }
+
+        /* =========================================================
+           MODULE 2: COMPOUNDER (2 COLONNES)
+           ========================================================= */
+        .cp-two-cols {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        @media (max-width: 600px) { .cp-two-cols { grid-template-columns: 1fr; } }
+        
+        .cp-col { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--bg-panel); }
+        .cp-col-head { background: var(--bg-app); padding: 0.6rem 0.8rem; font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid var(--border); }
+        .cp-col-body { max-height: 480px; overflow-y: auto; }
+        
+        .cp-day-row {
+            display: grid;
+            grid-template-columns: 45px 1fr 1fr 40px;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 0.8rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.8rem;
+        }
+        .cp-day-row:last-child { border-bottom: none; }
+        .cp-day-row:hover { background: rgba(255,255,255,0.02); }
+        .cp-day-row.checked { background: var(--green-bg); }
+        
+        .cp-day-label { font-weight: 800; color: var(--text-muted); }
+        .cp-day-row.checked .cp-day-label { color: var(--green-accent); text-decoration: line-through; }
+        .cp-day-val { font-weight: 700; font-size: 0.85rem; }
+        .cp-day-sub { display: block; font-size: 0.65rem; color: var(--text-muted); font-weight: 500; margin-top: 2px; }
+        
+        .checkbox-custom {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--green-accent);
+            cursor: pointer;
+        }
+
+        /* Progress Bar */
+        .progress-track { width: 100%; height: 6px; background: var(--bg-app); border-radius: 4px; overflow: hidden; margin-top: 0.5rem; }
+        .progress-fill { height: 100%; background: var(--blue-accent); width: 0%; transition: 0.3s; }
+
+        /* Modal */
+        .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; padding: 1rem; z-index: 100; }
+        .modal-box { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px; max-width: 400px; width: 100%; padding: 1.25rem; }
+        .modal-box h3 { font-size: 1rem; margin-bottom: 0.75rem; }
+        .modal-box p, .modal-box li { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+        .modal-box ul { padding-left: 1.2rem; margin-bottom: 1rem; }
+
+        footer { text-align: center; padding: 1.5rem; font-size: 0.7rem; color: var(--text-muted); border-top: 1px solid var(--border); }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <div class="header-inner">
+            <div class="brand">
+                <div class="brand-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                </div>
+                <div class="brand-title">
+                    <h1>Capital Manager</h1>
+                    <div class="brand-status"><i class="dot"></i> Prêt à trader</div>
+                </div>
+            </div>
+
+            <nav class="nav-tabs">
+                <button id="tab-btn-trader" class="tab-btn active" onclick="switchTab('trader')">
+                    <span>📈</span> Session
+                </button>
+                <button id="tab-btn-compounder" class="tab-btn" onclick="switchTab('compounder')">
+                    <span>⚙️</span> Règles / 30J
+                </button>
+            </nav>
+
+            <div class="header-actions">
+                <button class="icon-btn" onclick="exportBackup()" title="Exporter">💾</button>
+                <button class="icon-btn" onclick="document.getElementById('import-file').click()" title="Importer">📂</button>
+                <input type="file" id="import-file" accept=".json" class="hidden" onchange="importBackup(event)">
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- ========================================================= -->
+        <!-- MODULE 1 : TRADE MANAGER                                  -->
+        <!-- ========================================================= -->
+        <section id="view-trader">
+            
+            <!-- Panneau de Configuration -->
+            <div class="panel" style="margin-bottom: 1rem;">
+                <div class="grid-4">
+                    <div>
+                        <span class="label">Capital</span>
+                        <div class="input-group">
+                            <span>$</span>
+                            <input type="number" id="tm-capital" value="50.00" min="1" step="1" oninput="handleParamChange()">
+                        </div>
+                    </div>
+                    <div>
+                        <span class="label">Payout</span>
+                        <div class="input-group">
+                            <input type="number" id="tm-payout" value="92" min="50" max="100" step="1" oninput="handleParamChange()">
+                            <span>%</span>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="label">Trades Max</span>
+                        <select id="tm-total-trades" class="input-group" style="padding:0; border:none; background:transparent;" onchange="handleParamChange()">
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5" selected>5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10</option>
+                        </select>
+                    </div>
+                    <div>
+                        <span class="label">Wins Req.</span>
+                        <select id="tm-win-trades" class="input-group" style="padding:0; border:none; background:transparent;" onchange="handleParamChange()">
+                            <option value="1" selected>1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alerte $1 Minimum -->
+            <div id="min-stake-warning" class="alert-box hidden">
+                <span style="font-size:1.1rem;">⚠️</span>
+                <div id="min-stake-msg"></div>
+            </div>
+
+            <!-- Bannière de Statut -->
+            <div id="session-banner" class="panel" style="margin-bottom: 1rem; border-left: 3px solid var(--blue-accent);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div id="status-title" class="value-small text-blue">Session en cours</div>
+                        <div id="status-desc" style="font-size: 0.75rem; color: var(--text-muted);">Veuillez suivre les instructions.</div>
+                    </div>
+                    <button id="btn-next-session" class="btn btn-outline hidden" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.8rem;" onclick="startNewSession(true)">Suivant ➡️</button>
+                </div>
+            </div>
+
+            <!-- Montant Prochain Trade -->
+            <div class="next-trade-box">
+                <span class="label">Montant du prochain trade</span>
+                <div id="exec-stake" class="value-huge">$0.00</div>
+            </div>
+
+            <!-- Séquence de Trades (Points) -->
+            <div class="trades-dots" id="trades-dots-container">
+                <!-- Généré par JS -->
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-cell">
+                    <span class="label">Solde</span>
+                    <div id="kpi-current-balance" class="value-medium">$0.00</div>
+                </div>
+                <div class="stat-cell">
+                    <span class="label">Objectif</span>
+                    <div id="kpi-target-balance" class="value-medium">$0.00</div>
+                </div>
+                <div class="stat-cell">
+                    <span class="label">P/P (P&L Session)</span>
+                    <div id="kpi-current-pnl" class="value-small text-red">$0.00</div>
+                </div>
+                <div class="stat-cell">
+                    <span class="label">Gains / Restants</span>
+                    <div id="kpi-wins-count" class="value-small">0 / 0</div>
+                </div>
+                <div class="stat-cell">
+                    <span class="label">Payout</span>
+                    <div id="exec-payout-lbl" class="value-small">92%</div>
+                </div>
+                <div class="stat-cell">
+                    <span class="label">Profit Potentiel (Win)</span>
+                    <div id="exec-win-return" class="value-small text-green">+$0.00</div>
+                </div>
+            </div>
+
+            <!-- Boutons d'Action -->
+            <div class="action-buttons">
+                <button id="btn-win" class="btn btn-green" onclick="registerTrade('W')">
+                    ✓ ACHAT (WIN)
+                </button>
+                <button id="btn-loss" class="btn btn-red" onclick="registerTrade('L')">
+                    ✕ VENTE (LOSS)
+                </button>
+            </div>
+            
+            <div style="display: flex; gap: 0.75rem; margin-bottom: 1.5rem;">
+                <button id="btn-undo" class="btn btn-outline" onclick="undoLastTrade()" disabled>
+                    ↩ Annuler
+                </button>
+                <button class="btn btn-outline" onclick="startNewSession(false)">
+                    🔄 Réinitialiser
+                </button>
+            </div>
+
+            <!-- Tableau de Session & Historique -->
+            <div class="grid-layout">
+                <div class="panel">
+                    <h3 style="font-size: 0.85rem; font-weight: 700; margin-bottom: 0.75rem;">Plan de Trades (Algo)</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>N°</th>
+                                    <th>Statut</th>
+                                    <th>Mise</th>
+                                    <th>Gain/Perte</th>
+                                    <th>Solde</th>
+                                </tr>
+                            </thead>
+                            <tbody id="session-table-body">
+                                <!-- Généré dynamiquement -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                        <h3 style="font-size: 0.85rem; font-weight: 700;">Journal des Sessions</h3>
+                        <button class="btn-outline" style="padding: 0.2rem 0.5rem; font-size: 0.7rem; border-radius: 4px;" onclick="clearSessionLogs()">Vider</button>
+                    </div>
+                    <div id="completed-sessions-list" class="log-list">
+                        <p style="font-size: 0.75rem; color: var(--text-muted); text-align: center; padding: 1rem 0;">Aucune session enregistrée.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- MODULE 2 : 30 DAYS COMPOUNDER                             -->
+        <!-- ========================================================= -->
+        <section id="view-compounder" class="hidden">
+            
+            <div class="panel" style="margin-bottom: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3 style="font-size: 0.9rem; font-weight: 700;">Paramètres du Compounder</h3>
+                    <button class="btn btn-outline" style="width: auto; padding: 0.3rem 0.6rem; font-size: 0.75rem;" onclick="syncFromTradeManager()">🔄 Sync Trader</button>
+                </div>
+
+                <div class="grid-4">
+                    <div>
+                        <span class="label">Capital</span>
+                        <div class="input-group"><span>$</span><input type="number" id="cp-capital" value="50" oninput="renderCompounder()"></div>
+                    </div>
+                    <div>
+                        <span class="label">Gain / Session</span>
+                        <div class="input-group"><input type="number" id="cp-gain-pct" value="2.59" step="0.01" oninput="renderCompounder()"><span>%</span></div>
+                    </div>
+                    <div>
+                        <span class="label">Sessions / Jour</span>
+                        <div class="input-group"><input type="number" id="cp-sessions" value="5" min="1" oninput="renderCompounder()"></div>
+                    </div>
+                    <div style="background: var(--blue-bg); border: 1px solid rgba(59,130,246,0.3); border-radius: 8px; padding: 0.6rem;">
+                        <span class="label" style="color: var(--blue-accent);">Total Ratio / Jour</span>
+                        <div id="cp-total-ratio" class="value-medium text-blue">0%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-4" style="margin-bottom: 1rem;">
+                <div class="panel">
+                    <span class="label">Capital Jour 1</span>
+                    <div id="cp-kpi-start" class="value-medium">$0.00</div>
+                </div>
+                <div class="panel">
+                    <span class="label">Objectif Jour 30</span>
+                    <div id="cp-kpi-end" class="value-medium text-green">$0.00</div>
+                </div>
+                <div class="panel">
+                    <span class="label">Capital Validé (Checklist)</span>
+                    <div id="cp-kpi-checked-cap" class="value-medium text-orange">$0.00</div>
+                </div>
+                <div class="panel">
+                    <span class="label">Progression</span>
+                    <div id="cp-kpi-progress-pct" class="value-medium">0%</div>
+                    <div class="progress-track"><div id="cp-progress-bar" class="progress-fill"></div></div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <h3 style="font-size: 0.9rem; font-weight: 700;">Feuille de Route 30 Jours</h3>
+                    <button class="btn btn-outline" style="width: auto; padding: 0.3rem 0.6rem; font-size: 0.75rem;" onclick="resetCompounderChecks()">Réinitialiser</button>
+                </div>
+
+                <!-- 2 Colonnes : 1-15 et 16-30 -->
+                <div class="cp-two-cols">
+                    <div class="cp-col">
+                        <div class="cp-col-head">Jours 1 à 15</div>
+                        <div class="cp-col-body" id="compounder-col-left"></div>
+                    </div>
+                    <div class="cp-col">
+                        <div class="cp-col-head">Jours 16 à 30</div>
+                        <div class="cp-col-body" id="compounder-col-right"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        Capital Manager UI &bull; Connecté en local &bull; Sauvegarde automatique
+    </footer>
+
+    <!-- Modal Info -->
+    <div id="offline-modal" class="modal-backdrop hidden" onclick="if(event.target===this) toggleModal(false)">
+        <div class="modal-box">
+            <h3>💾 Sauvegarde Locale</h3>
+            <p>Ce logiciel fonctionne 100% hors-ligne. Vos données sont sauvegardées dans votre navigateur.</p>
+            <p>Utilisez le bouton <strong>💾</strong> en haut pour exporter un fichier de sécurité, et <strong>📂</strong> pour le restaurer.</p>
+            <button class="btn btn-blue" onclick="toggleModal(false)" style="margin-top: 1rem;">Compris</button>
+        </div>
+    </div>
+
+    <script>
+        /* ============================================================================
+           LOGIQUE MATHÉMATIQUE & ÉTAT GLOBAL
+           ============================================================================ */
+        const STORAGE_KEY = 'srm_v2_pro_ui_state';
+
+        let appState = {
+            activeTab: 'trader',
+            tm: {
+                capital: 50.00,
+                payout: 92,
+                totalTrades: 5,
+                winTrades: 1,
+                results: [], 
+                completedLogs: []
+            },
+            cp: {
+                capital: 50.00,
+                gainPct: 2.5914581,
+                sessionsPerDay: 5,
+                checkedDays: {} 
+            }
+        };
+
+        function loadState() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (parsed.tm) appState.tm = { ...appState.tm, ...parsed.tm };
+                    if (parsed.cp) appState.cp = { ...appState.cp, ...parsed.cp };
+                    if (parsed.activeTab) appState.activeTab = parsed.activeTab;
+                }
+            } catch (e) { console.warn('Erreur lecture:', e); }
+        }
+
+        function saveState() {
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(appState)); } 
+            catch (e) { console.warn('Erreur sauvegarde:', e); }
+        }
+
+        function buildCombinatorialMatrix(N, W, payoutPct) {
+            const P = payoutPct / 100;
+            const M = Array.from({ length: N + 1 }, () => Array(W + 1).fill(0));
+            for (let n = 0; n <= N; n++) M[n][0] = 1;
+            for (let n = 1; n <= N; n++) {
+                for (let w = 1; w <= W; w++) {
+                    M[n][w] = (n < w) ? 0 : (M[n - 1][w - 1] + P * M[n - 1][w]) / (1 + P);
+                }
+            }
+            const baseProb = M[N][W];
+            const sessionGainRate = baseProb > 0 ? (1 - baseProb) / baseProb : 0;
+            return { M, P, sessionGainRate };
+        }
+
+        function computeStepStake(M, P, n, w, currentBalance) {
+            if (w <= 0 || n <= 0 || n < w || currentBalance <= 0) return { rawStake: 0, finalStake: 0, belowMin: false };
+            const numerator = M[n - 1][w - 1] - M[n - 1][w];
+            const denominator = (1 + P) * M[n][w];
+            let rawStake = denominator > 0 ? currentBalance * (numerator / denominator) : 0;
+            
+            let belowMin = false;
+            let finalStake = rawStake;
+            if (finalStake < 1.00) {
+                belowMin = true;
+                finalStake = Math.min(1.00, currentBalance);
+            }
+            finalStake = Math.min(finalStake, currentBalance);
+            return { rawStake, finalStake: Math.round(finalStake * 100) / 100, belowMin };
+        }
+
+        /* ============================================================================
+           LOGIQUE MODULE 1 : TRADE MANAGER
+           ============================================================================ */
+        function handleParamChange() {
+            const cap = parseFloat(document.getElementById('tm-capital').value) || 50;
+            const payout = parseFloat(document.getElementById('tm-payout').value) || 92;
+            const totalTrades = parseInt(document.getElementById('tm-total-trades').value) || 5;
+            const winSelect = document.getElementById('tm-win-trades');
+
+            Array.from(winSelect.options).forEach(opt => { opt.disabled = parseInt(opt.value) > totalTrades; });
+            let winTrades = parseInt(winSelect.value) || 1;
+            if (winTrades > totalTrades) { winTrades = totalTrades; winSelect.value = winTrades; }
+
+            appState.tm.capital = Math.max(1, cap);
+            appState.tm.payout = Math.min(100, Math.max(1, payout));
+            appState.tm.totalTrades = totalTrades;
+            appState.tm.winTrades = winTrades;
+            
+            if (appState.tm.results.length > totalTrades) appState.tm.results = appState.tm.results.slice(0, totalTrades);
+            
+            saveState();
+            renderTradeManager();
+        }
+
+        function renderTradeManager() {
+            const { capital, payout, totalTrades, winTrades, results } = appState.tm;
+
+            // UI Sync
+            document.getElementById('tm-capital').value = capital;
+            document.getElementById('tm-payout').value = payout;
+            document.getElementById('tm-total-trades').value = totalTrades;
+            document.getElementById('tm-win-trades').value = winTrades;
+
+            const { M, P, sessionGainRate } = buildCombinatorialMatrix(totalTrades, winTrades, payout);
+            const sessionGainPct = sessionGainRate * 100;
+            const targetProfitDollar = capital * sessionGainRate;
+            const targetFinalBalance = capital + targetProfitDollar;
+
+            // KPIs
+            document.getElementById('kpi-target-balance').innerText = `$${targetFinalBalance.toFixed(2)}`;
+            document.getElementById('exec-payout-lbl').innerText = `${payout}%`;
+
+            // Simulation & Logique
+            let balance = capital;
+            let winsSoFar = 0;
+            let lossesSoFar = 0;
+            let anyBelowMin = false;
+            let firstRawStake = 0;
+            const rowsData = [];
+            let sessionOutcome = 'IN_PROGRESS';
+
+            for (let i = 0; i < totalTrades; i++) {
+                const nRemaining = totalTrades - i;
+                const wRemaining = winTrades - winsSoFar;
+
+                if (sessionOutcome !== 'IN_PROGRESS') {
+                    rowsData.push({ index: i + 1, status: 'SKIPPED', stake: 0, pnl: 0, balanceAfter: balance });
+                    continue;
+                }
+
+                const { rawStake, finalStake, belowMin } = computeStepStake(M, P, nRemaining, wRemaining, balance);
+                if (i === 0) firstRawStake = rawStake;
+                if (belowMin) anyBelowMin = true;
+
+                if (i < results.length) {
+                    const res = results[i];
+                    let pnl = 0;
+                    if (res === 'W') {
+                        pnl = Math.round(finalStake * P * 100) / 100;
+                        balance = Math.round((balance + pnl) * 100) / 100;
+                        winsSoFar++;
+                    } else {
+                        pnl = -finalStake;
+                        balance = Math.round((balance + pnl) * 100) / 100;
+                        lossesSoFar++;
+                    }
+                    rowsData.push({ index: i + 1, status: res, stake: finalStake, pnl, balanceAfter: balance });
+
+                    if (winsSoFar >= winTrades) sessionOutcome = 'WON';
+                    else if ((totalTrades - (i + 1)) < (winTrades - winsSoFar) || balance < 1.00) sessionOutcome = 'FAILED';
+                } else {
+                    const isNext = (i === results.length);
+                    rowsData.push({
+                        index: i + 1,
+                        status: isNext ? 'NEXT' : 'PENDING',
+                        stake: isNext ? finalStake : null,
+                        pnl: isNext ? Math.round(finalStake * P * 100) / 100 : null,
+                        balanceAfter: null
+                    });
+                }
+            }
+
+            // Alerte Minimum
+            const minWarnEl = document.getElementById('min-stake-warning');
+            if (anyBelowMin) {
+                const minCapNeeded = firstRawStake > 0 ? Math.ceil((capital / firstRawStake) * 100) / 100 : capital;
+                document.getElementById('min-stake-msg').innerHTML = `La mise théorique ($${firstRawStake.toFixed(2)}) est inférieure au minimum de $1.00. Le système applique le plancher. Capital recommandé : <b>$${minCapNeeded.toFixed(2)}</b>`;
+                minWarnEl.classList.remove('hidden');
+            } else {
+                minWarnEl.classList.add('hidden');
+            }
+
+            // Solde & PnL
+            const currentPnl = balance - capital;
+            const balEl = document.getElementById('kpi-current-balance');
+            balEl.innerText = `$${balance.toFixed(2)}`;
+            
+            const pnlEl = document.getElementById('kpi-current-pnl');
+            pnlEl.innerText = `${currentPnl >= 0 ? '+' : ''}$${currentPnl.toFixed(2)} (${((currentPnl/capital)*100).toFixed(2)}%)`;
+            pnlEl.className = 'value-small ' + (currentPnl > 0 ? 'text-green' : currentPnl < 0 ? 'text-red' : '');
+
+            document.getElementById('kpi-wins-count').innerText = `${winsSoFar} / ${winTrades}`;
+
+            // Boutons et Prochain Trade
+            const nextRow = rowsData.find(r => r.status === 'NEXT');
+            const btnWin = document.getElementById('btn-win');
+            const btnLoss = document.getElementById('btn-loss');
+            const btnUndo = document.getElementById('btn-undo');
+            const btnNextSess = document.getElementById('btn-next-session');
+
+            btnUndo.disabled = results.length === 0;
+
+            if (sessionOutcome === 'IN_PROGRESS' && nextRow) {
+                document.getElementById('exec-stake').innerText = `$${nextRow.stake.toFixed(2)}`;
+                document.getElementById('exec-win-return').innerText = `+$${nextRow.pnl.toFixed(2)}`;
+                btnWin.disabled = false;
+                btnLoss.disabled = false;
+            } else {
+                document.getElementById('exec-stake').innerText = '$0.00';
+                document.getElementById('exec-win-return').innerText = '$0.00';
+                btnWin.disabled = true;
+                btnLoss.disabled = true;
+            }
+
+            // Bannière Statut
+            const bannerEl = document.getElementById('session-banner');
+            const statusTitle = document.getElementById('status-title');
+            const statusDesc = document.getElementById('status-desc');
+
+            if (sessionOutcome === 'WON') {
+                bannerEl.style.borderLeftColor = 'var(--green-accent)';
+                statusTitle.className = 'value-small text-green';
+                statusTitle.innerText = `Objectif Atteint (+$${currentPnl.toFixed(2)})`;
+                statusDesc.innerText = `Félicitations, vous avez sécurisé le gain de la session.`;
+                btnNextSess.classList.remove('hidden');
+            } else if (sessionOutcome === 'FAILED') {
+                bannerEl.style.borderLeftColor = 'var(--red-accent)';
+                statusTitle.className = 'value-small text-red';
+                statusTitle.innerText = `Stop Loss Atteint`;
+                statusDesc.innerText = `La session est terminée. Protégez votre capital.`;
+                btnNextSess.classList.add('hidden');
+            } else {
+                bannerEl.style.borderLeftColor = 'var(--blue-accent)';
+                statusTitle.className = 'value-small text-blue';
+                statusTitle.innerText = `Session en cours`;
+                statusDesc.innerText = `Prochain trade : ${results.length + 1} / ${totalTrades}`;
+                btnNextSess.classList.add('hidden');
+            }
+
+            // Génération des points de trade (Dots)
+            const dotsContainer = document.getElementById('trades-dots-container');
+            dotsContainer.innerHTML = rowsData.map(r => {
+                let cls = 'trade-dot';
+                if (r.status === 'W') cls += ' win';
+                else if (r.status === 'L') cls += ' loss';
+                else if (r.status === 'NEXT') cls += ' active';
+                return `<div class="${cls}">${r.index}</div>`;
+            }).join('');
+
+            // Rendu du Tableau
+            const tbody = document.getElementById('session-table-body');
+            tbody.innerHTML = rowsData.map(r => {
+                let statusHtml = '<span style="color:var(--text-muted);font-size:0.75rem;">En attente</span>';
+                let rowClass = '';
+                if (r.status === 'W') statusHtml = '<span class="text-green" style="font-weight:700;font-size:0.75rem;">WIN</span>';
+                else if (r.status === 'L') statusHtml = '<span class="text-red" style="font-weight:700;font-size:0.75rem;">LOSS</span>';
+                else if (r.status === 'NEXT') { statusHtml = '<span class="text-blue" style="font-weight:700;font-size:0.75rem;">PROCHAIN</span>'; rowClass = 'active-row'; }
+                else if (r.status === 'SKIPPED') statusHtml = '<span style="color:var(--text-muted);opacity:0.5;font-size:0.75rem;">ANNULÉ</span>';
+
+                const stakeStr = r.stake !== null && r.stake > 0 ? `$${r.stake.toFixed(2)}` : '—';
+                let pnlStr = '—';
+                if (r.status === 'W') pnlStr = `<span class="text-green">+$${r.pnl.toFixed(2)}</span>`;
+                else if (r.status === 'L') pnlStr = `<span class="text-red">-$${Math.abs(r.pnl).toFixed(2)}</span>`;
+                else if (r.status === 'NEXT') pnlStr = `<span style="color:var(--text-muted);font-size:0.75rem;">Si W: +$${r.pnl.toFixed(2)}</span>`;
+
+                const balStr = r.balanceAfter !== null ? `<b>$${r.balanceAfter.toFixed(2)}</b>` : '—';
+
+                return `
+                    <tr class="${rowClass}">
+                        <td>#${r.index}</td>
+                        <td>${statusHtml}</td>
+                        <td style="font-weight:700;">${stakeStr}</td>
+                        <td>${pnlStr}</td>
+                        <td>${balStr}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            renderCompletedLogs();
+        }
+
+        function registerTrade(type) {
+            if (appState.tm.results.length >= appState.tm.totalTrades) return;
+            appState.tm.results.push(type);
+            saveState();
+            renderTradeManager();
+        }
+
+        function undoLastTrade() {
+            if (appState.tm.results.length === 0) return;
+            appState.tm.results.pop();
+            saveState();
+            renderTradeManager();
+        }
+
+        function startNewSession(capitalize) {
+            const { capital, payout, totalTrades, winTrades, results } = appState.tm;
+            if (results.length > 0) {
+                const { M, P } = buildCombinatorialMatrix(totalTrades, winTrades, payout);
+                let bal = capital;
+                let wins = 0;
+                results.forEach((res, idx) => {
+                    const { finalStake } = computeStepStake(M, P, totalTrades - idx, winTrades - wins, bal);
+                    if (res === 'W') { bal = Math.round((bal + finalStake * P) * 100) / 100; wins++; }
+                    else { bal = Math.round((bal - finalStake) * 100) / 100; }
+                });
+
+                const pnl = bal - capital;
+                appState.tm.completedLogs.unshift({
+                    date: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    startCap: capital,
+                    endCap: bal,
+                    pnl,
+                    won: wins >= winTrades
+                });
+
+                if (capitalize && bal >= 1) appState.tm.capital = bal;
+            }
+            appState.tm.results = [];
+            saveState();
+            renderTradeManager();
+        }
+
+        function clearSessionLogs() {
+            appState.tm.completedLogs = [];
+            saveState();
+            renderCompletedLogs();
+        }
+
+        function renderCompletedLogs() {
+            const list = document.getElementById('completed-sessions-list');
+            const logs = appState.tm.completedLogs || [];
+            if (logs.length === 0) {
+                list.innerHTML = `<p style="font-size: 0.75rem; color: var(--text-muted); text-align: center; padding: 1rem 0;">Aucune session enregistrée.</p>`;
+                return;
+            }
+            list.innerHTML = logs.map((log, i) => `
+                <div class="log-item">
+                    <div>
+                        <b style="color: ${log.won ? 'var(--green-accent)' : 'var(--red-accent)'};">Session #${logs.length - i}</b>
+                        <span style="display: block; font-size: 0.65rem; color: var(--text-muted);">$${log.startCap.toFixed(2)} ➔ $${log.endCap.toFixed(2)}</span>
+                    </div>
+                    <b style="color: ${log.pnl >= 0 ? 'var(--green-accent)' : 'var(--red-accent)'};">${log.pnl >= 0 ? '+' : ''}$${log.pnl.toFixed(2)}</b>
+                </div>
+            `).join('');
+        }
+
+        /* ============================================================================
+           LOGIQUE MODULE 2 : COMPOUNDER (AVEC 2 COLONNES)
+           ============================================================================ */
+        function syncFromTradeManager() {
+            const { capital, payout, totalTrades, winTrades } = appState.tm;
+            const { sessionGainRate } = buildCombinatorialMatrix(totalTrades, winTrades, payout);
+            appState.cp.capital = capital;
+            appState.cp.gainPct = parseFloat((sessionGainRate * 100).toFixed(4));
+            saveState();
+            renderCompounder();
+        }
+
+        function renderCompounder() {
+            const capInput = parseFloat(document.getElementById('cp-capital').value);
+            const gainInput = parseFloat(document.getElementById('cp-gain-pct').value);
+            const sessInput = parseInt(document.getElementById('cp-sessions').value);
+
+            appState.cp.capital = !isNaN(capInput) && capInput > 0 ? capInput : 50;
+            appState.cp.gainPct = !isNaN(gainInput) && gainInput >= 0 ? gainInput : 2.59;
+            appState.cp.sessionsPerDay = !isNaN(sessInput) && sessInput >= 1 ? sessInput : 5;
+            saveState();
+
+            const { capital, gainPct, sessionsPerDay, checkedDays } = appState.cp;
+
+            document.getElementById('cp-capital').value = capital;
+            document.getElementById('cp-gain-pct').value = gainPct;
+            document.getElementById('cp-sessions').value = sessionsPerDay;
+
+            const totalRatioLinear = gainPct * sessionsPerDay;
+            const dailyCompoundFactor = Math.pow(1 + (gainPct / 100), sessionsPerDay);
+
+            document.getElementById('cp-total-ratio').innerText = `${totalRatioLinear.toFixed(2)}%`;
+
+            let currentCap = capital;
+            let leftHtml = '';
+            let rightHtml = '';
+            let checkedCount = 0;
+            let validatedCapital = capital;
+
+            for (let day = 1; day <= 30; day++) {
+                const startCap = currentCap;
+                const endCap = startCap * dailyCompoundFactor;
+                const dailyProfit = endCap - startCap;
+                const isChecked = !!checkedDays[day];
+
+                if (isChecked) {
+                    checkedCount++;
+                    validatedCapital = endCap;
+                }
+
+                const rowHtml = `
+                    <div class="cp-day-row ${isChecked ? 'checked' : ''}">
+                        <span class="cp-day-label">J${day}</span>
+                        <span>
+                            $${startCap.toFixed(2)}
+                            <span class="cp-day-sub text-green">+$${dailyProfit.toFixed(2)}</span>
+                        </span>
+                        <span class="cp-day-val text-blue">
+                            $${endCap.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>
+                        <span style="text-align:center;">
+                            <input type="checkbox" class="checkbox-custom" ${isChecked ? 'checked' : ''} onchange="toggleDayCheck(${day}, this.checked)">
+                        </span>
+                    </div>
+                `;
+
+                if (day <= 15) leftHtml += rowHtml;
+                else rightHtml += rowHtml;
+
+                currentCap = endCap;
+            }
+
+            document.getElementById('compounder-col-left').innerHTML = leftHtml;
+            document.getElementById('compounder-col-right').innerHTML = rightHtml;
+
+            const progressPct = (checkedCount / 30) * 100;
+
+            document.getElementById('cp-kpi-start').innerText = `$${capital.toFixed(2)}`;
+            document.getElementById('cp-kpi-end').innerText = `$${currentCap.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            document.getElementById('cp-kpi-checked-cap').innerText = `$${validatedCapital.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            document.getElementById('cp-kpi-progress-pct').innerText = `${progressPct.toFixed(1)}%`;
+            document.getElementById('cp-progress-bar').style.width = `${progressPct}%`;
+        }
+
+        function toggleDayCheck(day, isChecked) {
+            if (isChecked) appState.cp.checkedDays[day] = true;
+            else delete appState.cp.checkedDays[day];
+            saveState();
+            renderCompounder();
+        }
+
+        function resetCompounderChecks() {
+            appState.cp.checkedDays = {};
+            saveState();
+            renderCompounder();
+        }
+
+        /* ============================================================================
+           NAVIGATION & OUTILS
+           ============================================================================ */
+        function switchTab(tabName) {
+            appState.activeTab = tabName;
+            saveState();
+
+            const viewTrader = document.getElementById('view-trader');
+            const viewComp = document.getElementById('view-compounder');
+            const btnTrader = document.getElementById('tab-btn-trader');
+            const btnComp = document.getElementById('tab-btn-compounder');
+
+            if (tabName === 'trader') {
+                viewTrader.classList.remove('hidden');
+                viewComp.classList.add('hidden');
+                btnTrader.classList.add('active');
+                btnComp.classList.remove('active');
+                renderTradeManager();
+            } else {
+                viewTrader.classList.add('hidden');
+                viewComp.classList.remove('hidden');
+                btnComp.classList.add('active');
+                btnTrader.classList.remove('active');
+                renderCompounder();
+            }
+        }
+
+        function toggleModal(show) {
+            const modal = document.getElementById('offline-modal');
+            if (show) modal.classList.remove('hidden');
+            else modal.classList.add('hidden');
+        }
+
+        function exportBackup() {
+            const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(appState, null, 2));
+            const a = document.createElement('a');
+            a.setAttribute('href', dataStr);
+            a.setAttribute('download', `CapitalManager_Backup_${new Date().toISOString().slice(0, 10)}.json`);
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        }
+
+        function importBackup(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (imported.tm && imported.cp) {
+                        appState = imported;
+                        saveState();
+                        switchTab(appState.activeTab || 'trader');
+                    }
+                } catch (err) { console.error('Fichier invalide', err); }
+            };
+            reader.readAsText(file);
+        }
+
+        window.onload = function() {
+            loadState();
+            switchTab(appState.activeTab || 'trader');
+        };
+    </script>
+</body>
+</html>
