@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/jpeg" href="logo.png">
+    <title>Capital Management Trades — Offline App</title>
+    <style>
+        /* CSS Autonome 100% Hors-Ligne (Zéro dépendance externe requise) */
+        :root {
+            --bg-main: #0b1120;
+            --bg-card: #131c31;
+            --bg-input: #090e1a;
+            --bg-hover: #1e293b;
+            --border: #24324d;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --emerald: #10b981;
+            --emerald-dark: #059669;
+            --emerald-bg: rgba(16, 185, 129, 0.12);
+            --rose: #f43f5e;
+            --rose-dark: #e11d48;
+            --rose-bg: rgba(244, 63, 94, 0.12);
+            --amber: #f59e0b;
+            --amber-bg: rgba(245, 158, 11, 0.14);
+            --teal: #2dd4bf;
+            --radius: 14px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 7px; height: 7px; }
+        ::-webkit-scrollbar-track { background: var(--bg-main); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3b4f75; }
+
+        /* Header */
+        header {
+            background: rgba(19, 28, 49, 0.92);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .header-inner {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0.85rem 1.25rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .brand-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--emerald), var(--teal));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.1rem;
+            color: #052e16;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);
+        }
+        .brand-title h1 { font-size: 1.05rem; font-weight: 700; letter-spacing: -0.01em; }
+        .brand-title span { font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.35rem; }
+        .dot-online { width: 7px; height: 7px; border-radius: 50%; background: var(--emerald); display: inline-block; }
+
+        /* Tabs */
+        .nav-tabs {
+            display: flex;
+            background: var(--bg-input);
+            padding: 0.25rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+        .tab-btn {
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            padding: 0.55rem 1.1rem;
+            border-radius: 9px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+        }
+        .tab-btn:hover { color: var(--text-main); }
+        .tab-btn.active {
+            background: var(--emerald-dark);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(5, 150, 105, 0.35);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .btn-outline {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 0.45rem 0.75rem;
+            border-radius: 9px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-outline:hover { color: var(--text-main); border-color: #475569; }
+
+        /* Main Container */
+        main {
+            max-width: 1280px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 1.5rem 1.25rem 3rem;
+            flex-grow: 1;
+        }
+        .hidden { display: none !important; }
+
+        /* Grids & Cards */
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+        .grid-2-1 { display: grid; grid-template-columns: 2fr 1fr; gap: 1.25rem; }
+        @media (max-width: 960px) {
+            .grid-4 { grid-template-columns: repeat(2, 1fr); }
+            .grid-2-1 { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 580px) {
+            .grid-4, .grid-3 { grid-template-columns: 1fr; }
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.15rem;
+        }
+        .card-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            margin-bottom: 0.4rem;
+            display: block;
+        }
+        .input-control, .select-control {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0.6rem 0.85rem;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .input-control:focus, .select-control:focus { border-color: var(--emerald); }
+
+        /* KPI Stats */
+        .kpi-val { font-size: 1.65rem; font-weight: 800; letter-spacing: -0.02em; margin-top: 0.15rem; }
+        .kpi-sub { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.2rem; display: block; }
+        .text-emerald { color: var(--emerald); }
+        .text-rose { color: var(--rose); }
+        .text-teal { color: var(--teal); }
+        .text-amber { color: var(--amber); }
+
+        /* Banners */
+        .banner {
+            padding: 0.95rem 1.2rem;
+            border-radius: var(--radius);
+            border: 1px solid;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .banner-info { background: rgba(45, 212, 191, 0.08); border-color: rgba(45, 212, 191, 0.3); color: #ccfbf1; }
+        .banner-success { background: var(--emerald-bg); border-color: rgba(16, 185, 129, 0.45); color: #d1fae5; }
+        .banner-danger { background: var(--rose-bg); border-color: rgba(244, 63, 94, 0.45); color: #ffe4e6; }
+        .banner-warning { background: var(--amber-bg); border-color: rgba(245, 158, 11, 0.45); color: #fef3c7; }
+
+        /* Active Execution Box */
+        .exec-box {
+            background: linear-gradient(145deg, #16223b, #0e1629);
+            border: 1px solid #2d4063;
+            border-radius: 16px;
+            padding: 1.4rem;
+            margin: 1.25rem 0;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.25rem;
+        }
+        .badge-pill {
+            display: inline-block;
+            padding: 0.25rem 0.7rem;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            background: var(--emerald-bg);
+            color: var(--emerald);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        .btn-group { display: flex; flex-wrap: wrap; gap: 0.65rem; }
+        .btn {
+            border: none;
+            padding: 0.8rem 1.35rem;
+            border-radius: 11px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+        }
+        .btn:active { transform: scale(0.98); }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-win { background: var(--emerald-dark); color: #fff; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25); }
+        .btn-win:hover:not(:disabled) { background: var(--emerald); }
+        .btn-loss { background: var(--rose-dark); color: #fff; box-shadow: 0 4px 12px rgba(244, 63, 94, 0.25); }
+        .btn-loss:hover:not(:disabled) { background: var(--rose); }
+        .btn-secondary { background: #263552; color: #e2e8f0; }
+        .btn-secondary:hover:not(:disabled) { background: #33476b; }
+
+        /* Tables */
+        .table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.86rem; }
+        thead th {
+            background: var(--bg-input);
+            color: var(--text-muted);
+            font-size: 0.74rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            padding: 0.75rem 0.9rem;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+        }
+        tbody td {
+            padding: 0.72rem 0.9rem;
+            border-bottom: 1px solid var(--border);
+        }
+        tbody tr:last-child td { border-bottom: none; }
+        tbody tr:hover { background: rgba(255, 255, 255, 0.02); }
+        tr.row-active { background: rgba(16, 185, 129, 0.09) !important; }
+        tr.row-active td:first-child { border-left: 3px solid var(--emerald); }
+        tr.row-checked { background: rgba(16, 185, 129, 0.11) !important; }
+        tr.row-checked td.day-label { text-decoration: line-through; color: var(--emerald); }
+
+        /* Status tags */
+        .tag-w { background: var(--emerald-bg); color: var(--emerald); padding: 0.2rem 0.55rem; border-radius: 6px; font-weight: 700; font-size: 0.75rem; }
+        .tag-l { background: var(--rose-bg); color: var(--rose); padding: 0.2rem 0.55rem; border-radius: 6px; font-weight: 700; font-size: 0.75rem; }
+        .tag-wait { background: rgba(148, 163, 184, 0.12); color: var(--text-muted); padding: 0.2rem 0.55rem; border-radius: 6px; font-weight: 600; font-size: 0.75rem; }
+
+        /* Custom Checkbox */
+        .day-checkbox {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--emerald);
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        /* Progress Bar */
+        .progress-track {
+            width: 100%;
+            height: 10px;
+            background: var(--bg-input);
+            border-radius: 999px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            margin-top: 0.6rem;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--emerald-dark), var(--teal));
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* Compounder : 2 colonnes de 15 jours */
+        .cp-two-cols {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.9rem;
+            margin-top: 0.4rem;
+        }
+        @media (max-width: 820px) {
+            .cp-two-cols { grid-template-columns: 1fr; }
+        }
+        .cp-col {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            background: var(--bg-main);
+        }
+        .cp-col-head {
+            background: var(--bg-input);
+            color: var(--text-muted);
+            font-size: 0.74rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            padding: 0.6rem 0.8rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .cp-col-body {
+            max-height: 560px;
+            overflow-y: auto;
+        }
+        .cp-day-row {
+            display: grid;
+            grid-template-columns: 52px 1fr 1fr 46px;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.55rem 0.7rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.82rem;
+        }
+        .cp-day-row:last-child { border-bottom: none; }
+        .cp-day-row:hover { background: rgba(255, 255, 255, 0.02); }
+        .cp-day-row.row-checked { background: rgba(16, 185, 129, 0.11) !important; }
+        .cp-day-row .d-label { font-weight: 700; font-size: 0.8rem; }
+        .cp-day-row.row-checked .d-label { text-decoration: line-through; color: var(--emerald); }
+        .cp-day-row .d-end { font-weight: 800; color: var(--teal); font-size: 0.82rem; }
+        .cp-day-row .d-profit { color: var(--emerald); font-weight: 600; font-size: 0.78rem; }
+        .cp-day-row .d-sub { display: block; font-size: 0.68rem; color: var(--text-muted); font-weight: 500; }
+        .cp-day-row .d-check { text-align: center; }
+
+        /* Modal Help */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.72);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            z-index: 100;
+        }
+        .modal-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            max-width: 520px;
+            width: 100%;
+            padding: 1.5rem;
+        }
+        .modal-box h3 { font-size: 1.1rem; margin-bottom: 0.75rem; }
+        .modal-box p, .modal-box li { font-size: 0.86rem; color: var(--text-muted); margin-bottom: 0.55rem; }
+        .modal-box ul { padding-left: 1.2rem; margin-bottom: 1rem; }
+
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 1rem;
+            text-align: center;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- En-tête -->
+    <header>
+        <div class="header-inner">
+            <div class="brand">
+                <img src="logo.png" alt="Logo" style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover;">
+                <div class="brand-title">
+                    <h1>KABUTO'S System</h1>
+                    <span><i class="dot-online"></i> Pran san'w Pran tan'w &bull; Options Binaires </span>
+                </div>
+            </div>
+
+            <nav class="nav-tabs">
+                <button id="tab-btn-trader" class="tab-btn active" onclick="switchTab('trader')">
+                    <span>📊</span> Trade Manager
+                </button>
+                <button id="tab-btn-compounder" class="tab-btn" onclick="switchTab('compounder')">
+                    <span>📈</span> 30 Days Compounder
+                </button>
+            </nav>
+
+            <div class="header-actions">
+                <button class="btn-outline" onclick="exportBackup()" title="Sauvegarder vos données en JSON">💾 Exporter</button>
+                <button class="btn-outline" onclick="document.getElementById('import-file').click()" title="Restaurer une sauvegarde">📂 Importer</button>
+                <input type="file" id="import-file" accept=".json" class="hidden" onchange="importBackup(event)">
+                <button class="btn-outline" onclick="toggleOfflineModal(true)">📱 App Hors-Ligne</button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- ========================================================= -->
+        <!-- MODULE 1 : TRADE MANAGER                                  -->
+        <!-- ========================================================= -->
+        <section id="view-trader">
+            <!-- Bannière de statut dynamique -->
+            <div id="session-status-banner" class="banner banner-info">
+                <div>
+                    <strong id="status-title" style="font-size: 0.92rem;">Session en cours — 0/1 victoire requise</strong>
+                    <p id="status-desc" style="font-size: 0.8rem; opacity: 0.9; margin-top: 2px;">Suivez la mise suggérée ci-dessous. Règle broker respectée (mise &ge; $1.00).</p>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-secondary" style="padding: 0.45rem 0.9rem; font-size: 0.8rem;" onclick="startNewSession(false)">🔄 Réinitialiser</button>
+                    <button id="btn-next-session" class="btn btn-win hidden" style="padding: 0.45rem 0.9rem; font-size: 0.8rem;" onclick="startNewSession(true)">➡️ Session Suivante (Capitaliser)</button>
+                </div>
+            </div>
+
+            <!-- Alerte minimum broker $1.00 si capital insuffisant pour la combinaison choisie -->
+            <div id="min-stake-warning" class="banner banner-warning hidden">
+                <div>
+                    <strong style="font-size: 0.9rem;">⚠️ Plancher Options Binaires ($1.00 minimum) activé</strong>
+                    <p id="min-stake-msg" style="font-size: 0.8rem; margin-top: 2px;"></p>
+                </div>
+            </div>
+
+            <!-- Paramètres de Configuration (4 colonnes exactes du système) -->
+            <div class="grid-4" style="margin-bottom: 1rem;">
+                <div class="card">
+                    <label class="card-label" for="tm-capital">Capital Initial ($)</label>
+                    <input type="number" id="tm-capital" class="input-control" value="40.00" min="1" step="0.5" oninput="handleParamChange()">
+                </div>
+                <div class="card">
+                    <label class="card-label" for="tm-payout">Payout Broker (%)</label>
+                    <input type="number" id="tm-payout" class="input-control" value="92" min="50" max="100" step="1" oninput="handleParamChange()">
+                </div>
+                <div class="card">
+                    <label class="card-label" for="tm-total-trades">Total Trades (Série Max)</label>
+                    <select id="tm-total-trades" class="select-control" onchange="handleParamChange()">
+                        <option value="2">2 Trades</option>
+                        <option value="3">3 Trades</option>
+                        <option value="4">4 Trades</option>
+                        <option value="5" selected>5 Trades</option>
+                        <option value="6">6 Trades</option>
+                        <option value="7">7 Trades</option>
+                        <option value="8">8 Trades</option>
+                        <option value="9">9 Trades</option>
+                        <option value="10">10 Trades</option>
+                    </select>
+                </div>
+                <div class="card">
+                    <label class="card-label" for="tm-win-trades">Win Trades (Victoires Requises)</label>
+                    <select id="tm-win-trades" class="select-control" onchange="handleParamChange()">
+                        <option value="1" selected>1 Win Trade</option>
+                        <option value="2">2 Win Trades</option>
+                        <option value="3">3 Win Trades</option>
+                        <option value="4">4 Win Trades</option>
+                        <option value="5">5 Win Trades</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Cartes KPI Objectif Session Automatique -->
+            <div class="grid-4">
+                <div class="card">
+                    <span class="card-label">Objectif Session (Auto)</span>
+                    <div id="kpi-session-pct" class="kpi-val text-emerald">+2.59%</div>
+                    <span id="kpi-session-profit" class="kpi-sub">Gain net cible : +$1.04</span>
+                </div>
+                <div class="card">
+                    <span class="card-label">Solde Courant</span>
+                    <div id="kpi-current-balance" class="kpi-val">$40.00</div>
+                    <span id="kpi-current-pnl" class="kpi-sub">P&L Session : $0.00 (0.00%)</span>
+                </div>
+                <div class="card">
+                    <span class="card-label">Capital Final Visé</span>
+                    <div id="kpi-target-balance" class="kpi-val text-teal">$41.04</div>
+                    <span class="kpi-sub">Après validation des <span id="lbl-win-req">1</span>W</span>
+                </div>
+                <div class="card">
+                    <span class="card-label">Progression Session</span>
+                    <div id="kpi-progress-trades" class="kpi-val">0 / 5</div>
+                    <span id="kpi-wins-count" class="kpi-sub">0 victoire(s) &bull; 0 perte(s)</span>
+                </div>
+            </div>
+
+            <!-- Panneau d'Exécution du Trade Actif -->
+            <div class="exec-box">
+                <div>
+                    <span class="badge-pill" id="exec-step-badge">Trade #1 sur 5</span>
+                    <h2 style="font-size: 1.75rem; font-weight: 800; margin-top: 0.45rem;">
+                        Mise à placer : <span id="exec-stake" class="text-emerald">$1.13</span>
+                    </h2>
+                    <p style="font-size: 0.84rem; color: var(--text-muted); margin-top: 0.25rem;">
+                        Profit potentiel sur ce trade : <strong id="exec-win-return" class="text-teal">+$1.04</strong> (Payout <span id="exec-payout-lbl">92</span>%)
+                    </p>
+                </div>
+
+                <div class="btn-group">
+                    <button id="btn-win" class="btn btn-win" onclick="registerTrade('W')">
+                        ✓ WIN (W)
+                    </button>
+                    <button id="btn-loss" class="btn btn-loss" onclick="registerTrade('L')">
+                        ✕ LOSS (L)
+                    </button>
+                    <button id="btn-undo" class="btn btn-secondary" onclick="undoLastTrade()" disabled>
+                        ↩ Annuler
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tableau de Session & Historique -->
+            <div class="grid-2-1">
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem;">
+                        <h3 style="font-size: 0.95rem; font-weight: 700;">Plan de Trades de la Session (Algo Combinatoire)</h3>
+                        <span style="font-size: 0.76rem; color: var(--text-muted);">Mise minimale : $1.00</span>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Trade N°</th>
+                                    <th>Statut</th>
+                                    <th>Mise ($)</th>
+                                    <th>Gain / Perte ($)</th>
+                                    <th>Solde Résultant ($)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="session-table-body">
+                                <!-- Généré dynamiquement -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card" style="display: flex; flex-direction: column;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem;">
+                        <h3 style="font-size: 0.95rem; font-weight: 700;">Journal des Sessions Validées</h3>
+                        <button class="btn-outline" style="padding: 0.25rem 0.55rem; font-size: 0.72rem;" onclick="clearSessionLogs()">Vider</button>
+                    </div>
+                    <div id="completed-sessions-list" style="flex-grow: 1; max-height: 360px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.55rem;">
+                        <p style="font-size: 0.8rem; color: var(--text-muted); text-align: center; padding: 2rem 0;">Aucune session clôturée enregistrée.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- MODULE 2 : 30 DAYS COMPOUNDER                             -->
+        <!-- ========================================================= -->
+        <section id="view-compounder" class="hidden">
+            <!-- Paramètres du Compounder -->
+            <div class="card" style="margin-bottom: 1.25rem;">
+                <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+                    <h3 style="font-size: 1rem; font-weight: 700;">Paramètres du Plan sur 30 Jours</h3>
+                    <button class="btn-outline" onclick="syncFromTradeManager()">🔄 Synchroniser avec Trade Manager (<span id="sync-pct-preview">2.59%</span>)</button>
+                </div>
+
+                <div class="grid-4">
+                    <div>
+                        <label class="card-label" for="cp-capital">Capital Initial ($)</label>
+                        <input type="number" id="cp-capital" class="input-control" value="40.00" min="1" step="1" oninput="renderCompounder()">
+                    </div>
+                    <div>
+                        <label class="card-label" for="cp-gain-pct">Account Gain / Session (%)</label>
+                        <input type="number" id="cp-gain-pct" class="input-control" value="2.591458" min="0.01" step="0.01" oninput="renderCompounder()">
+                    </div>
+                    <div>
+                        <label class="card-label" for="cp-sessions">Daily Sessions (Sessions / Jour)</label>
+                        <input type="number" id="cp-sessions" class="input-control" value="5" min="1" max="50" step="1" oninput="renderCompounder()">
+                    </div>
+                    <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 11px; padding: 0.65rem 0.9rem;">
+                        <span class="card-label" style="color: var(--emerald); margin-bottom: 0.15rem;">Total Ratio (%) Quotidien</span>
+                        <div id="cp-total-ratio" style="font-size: 1.45rem; font-weight: 800; color: var(--emerald);">12.96%</div>
+                        <span style="font-size: 0.72rem; color: var(--text-muted);" id="cp-effective-daily">Composés : +13.65% / jour</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cartes Résumé & Progression Checklist -->
+            <div class="grid-4" style="margin-bottom: 1.25rem;">
+                <div class="card">
+                    <span class="card-label">Capital Jour 1</span>
+                    <div id="cp-kpi-start" class="kpi-val">$40.00</div>
+                    <span class="kpi-sub">Base de départ</span>
+                </div>
+                <div class="card">
+                    <span class="card-label">Objectif Jour 30</span>
+                    <div id="cp-kpi-end" class="kpi-val text-emerald">$1,544.00</div>
+                    <span id="cp-kpi-profit-total" class="kpi-sub">Profit net : +$1,504.00</span>
+                </div>
+                <div class="card">
+                    <span class="card-label">Capital Validé (Checklist)</span>
+                    <div id="cp-kpi-checked-cap" class="kpi-val text-teal">$40.00</div>
+                    <span id="cp-kpi-checked-days" class="kpi-sub">0 / 30 jours validés</span>
+                </div>
+                <div class="card">
+                    <span class="card-label">Avancement du Challenge</span>
+                    <div id="cp-kpi-progress-pct" class="kpi-val">0.0%</div>
+                    <div class="progress-track">
+                        <div id="cp-progress-bar" class="progress-fill"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feuille de Route 30 Jours : 2 colonnes de 15 jours -->
+            <div class="card">
+                <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.75rem; margin-bottom: 0.9rem;">
+                    <div>
+                        <h3 style="font-size: 0.98rem; font-weight: 700;">Feuille de Route — 30 Jours Compounding</h3>
+                        <p style="font-size: 0.78rem; color: var(--text-muted);">Cochez la case à droite de chaque jour une fois vos sessions quotidiennes terminées.</p>
+                    </div>
+                    <button class="btn-outline" onclick="resetCompounderChecks()">🔄 Réinitialiser les cases</button>
+                </div>
+
+                <div class="cp-two-cols" id="compounder-cols">
+                    <div class="cp-col">
+                        <div class="cp-col-head">Jours 1 à 15</div>
+                        <div class="cp-col-body" id="compounder-col-left"></div>
+                    </div>
+                    <div class="cp-col">
+                        <div class="cp-col-head">Jours 16 à 30</div>
+                        <div class="cp-col-body" id="compounder-col-right"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        System Risk Management V2 &bull; Calculs Combinatoires Exactes (Algo) &bull; Fonctionne 100% Hors-Ligne
+    </footer>
+
+    <!-- Modal d'aide Application Hors-Ligne -->
+    <div id="offline-modal" class="modal-backdrop hidden" onclick="if(event.target===this) toggleOfflineModal(false)">
+        <div class="modal-box">
+            <h3>📱 Utiliser comme Application Hors-Ligne (Sans Internet)</h3>
+            <p>Ce logiciel est entièrement autonome (un seul fichier HTML sans serveur). Toutes vos données sont sauvegardées automatiquement dans votre appareil.</p>
+            <ul>
+                <li><strong>Sur PC / Mac (Chrome, Edge, Brave) :</strong> Ouvrez ce fichier HTML, puis cliquez sur l'icône d'installation dans la barre d'adresse ou allez dans <em>Menu &rarr; Enregistrer et partager &rarr; Installer la page en tant qu'application</em>.</li>
+                <li><strong>Sur Android / iPhone :</strong> Ouvrez ce fichier dans votre navigateur mobile, puis appuyez sur <em>Partager / Menu &rarr; Ajouter à l'écran d'accueil</em>.</li>
+                <li><strong>Sauvegarde de sécurité :</strong> Utilisez le bouton <strong>💾 Exporter</strong> en haut à droite pour conserver une copie de vos progressions.</li>
+            </ul>
+            <div style="text-align: right;">
+                <button class="btn btn-win" style="padding: 0.5rem 1.1rem;" onclick="toggleOfflineModal(false)">Compris</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ============================================================================
+           1. ALGORITHME COMBINATOIRE EXACT (MASANIELLO / ONGLET "ALGO" DU FICHIER)
+           ============================================================================ */
+        const STORAGE_KEY = 'srm_v2_offline_state';
+
+        // État global persistant
+        let appState = {
+            activeTab: 'trader',
+            tm: {
+                capital: 40.00,
+                payout: 92,
+                totalTrades: 5,
+                winTrades: 1,
+                results: [], // tableau de 'W' ou 'L'
+                completedLogs: []
+            },
+            cp: {
+                capital: 40.00,
+                gainPct: 2.5914581,
+                sessionsPerDay: 5,
+                checkedDays: {} // ex: { 1: true, 2: true }
+            }
+        };
+
+        // Charger depuis localStorage au démarrage
+        function loadState() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (parsed.tm) appState.tm = { ...appState.tm, ...parsed.tm };
+                    if (parsed.cp) appState.cp = { ...appState.cp, ...parsed.cp };
+                    if (parsed.activeTab) appState.activeTab = parsed.activeTab;
+                }
+            } catch (e) {
+                console.warn('Erreur lecture localStorage:', e);
+            }
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+            } catch (e) {
+                console.warn('Erreur sauvegarde localStorage:', e);
+            }
+        }
+
+        /**
+         * Construit la matrice combinatoire M(n, w) pour n trades restants et w victoires requises
+         * avec un payout P (ex: 0.92).
+         * M(n, 0) = 1
+         * M(n, w) = 0 si n < w
+         * M(n, w) = (M(n - 1, w - 1) + P * M(n - 1, w)) / (1 + P)
+         *
+         * Pour N=5, W=1, P=0.92 :
+         * Gain_Session = (1 - M(5, 1)) / M(5, 1) = 0.025914581 (2.5914581%)
+         * Pour N=4, W=1, P=0.92 :
+         * Gain_Session = (1 - M(4, 1)) / M(4, 1) = 0.055650159 (5.5650159%)
+         */
+        function buildCombinatorialMatrix(N, W, payoutPct) {
+            const P = payoutPct / 100;
+            const M = Array.from({ length: N + 1 }, () => Array(W + 1).fill(0));
+
+            for (let n = 0; n <= N; n++) {
+                M[n][0] = 1;
+            }
+            for (let n = 1; n <= N; n++) {
+                for (let w = 1; w <= W; w++) {
+                    if (n < w) {
+                        M[n][w] = 0;
+                    } else {
+                        M[n][w] = (M[n - 1][w - 1] + P * M[n - 1][w]) / (1 + P);
+                    }
+                }
+            }
+
+            const baseProb = M[N][W];
+            const sessionGainRate = baseProb > 0 ? (1 - baseProb) / baseProb : 0;
+            return { M, P, sessionGainRate };
+        }
+
+        /**
+         * Calcule la mise exacte à l'instant t (n trades restants, w victoires restantes, capital courant C_curr)
+         * Tout en appliquant la règle stricte des Options Binaires : Mise >= $1.00.
+         */
+        function computeStepStake(M, P, n, w, currentBalance, targetBalance) {
+            if (w <= 0 || n <= 0 || n < w || currentBalance <= 0) return { rawStake: 0, finalStake: 0, belowMin: false };
+
+            // Formule combinatoire exacte :
+            // Mise = C_curr * (M[n-1][w-1] - M[n-1][w]) / ((1 + P) * M[n][w])
+            const numerator = M[n - 1][w - 1] - M[n - 1][w];
+            const denominator = (1 + P) * M[n][w];
+            let rawStake = denominator > 0 ? currentBalance * (numerator / denominator) : 0;
+
+            // Règle stricte Options Binaires : jamais moins de $1.00
+            let belowMin = false;
+            let finalStake = rawStake;
+            if (finalStake < 1.00) {
+                belowMin = true;
+                finalStake = Math.min(1.00, currentBalance);
+            }
+            // Ne jamais miser plus que le solde disponible
+            finalStake = Math.min(finalStake, currentBalance);
+
+            return {
+                rawStake,
+                finalStake: Math.round(finalStake * 100) / 100,
+                belowMin
+            };
+        }
+
+        /* ============================================================================
+           2. LOGIQUE DU MODULE 1 : TRADE MANAGER
+           ============================================================================ */
+        function handleParamChange() {
+            const cap = parseFloat(document.getElementById('tm-capital').value) || 40;
+            const payout = parseFloat(document.getElementById('tm-payout').value) || 92;
+            const totalTrades = parseInt(document.getElementById('tm-total-trades').value) || 5;
+            const winSelect = document.getElementById('tm-win-trades');
+
+            // S'assurer que Win Trades <= Total Trades
+            Array.from(winSelect.options).forEach(opt => {
+                opt.disabled = parseInt(opt.value) > totalTrades;
+            });
+            let winTrades = parseInt(winSelect.value) || 1;
+            if (winTrades > totalTrades) {
+                winTrades = totalTrades;
+                winSelect.value = winTrades;
+            }
+
+            appState.tm.capital = Math.max(1, cap);
+            appState.tm.payout = Math.min(100, Math.max(1, payout));
+            appState.tm.totalTrades = totalTrades;
+            appState.tm.winTrades = winTrades;
+
+            // Si des résultats dépassent le nouveau totalTrades, on tronque
+            if (appState.tm.results.length > totalTrades) {
+                appState.tm.results = appState.tm.results.slice(0, totalTrades);
+            }
+
+            saveState();
+            renderTradeManager();
+        }
+
+        function renderTradeManager() {
+            const { capital, payout, totalTrades, winTrades, results } = appState.tm;
+
+            // Synchroniser les champs UI
+            document.getElementById('tm-capital').value = capital;
+            document.getElementById('tm-payout').value = payout;
+            document.getElementById('tm-total-trades').value = totalTrades;
+            document.getElementById('tm-win-trades').value = winTrades;
+
+            const { M, P, sessionGainRate } = buildCombinatorialMatrix(totalTrades, winTrades, payout);
+            const sessionGainPct = sessionGainRate * 100;
+            const targetProfitDollar = capital * sessionGainRate;
+            const targetFinalBalance = capital + targetProfitDollar;
+
+            // Mise à jour aperçu bouton sync dans Compounder
+            document.getElementById('sync-pct-preview').innerText = sessionGainPct.toFixed(2) + '%';
+
+            // KPIs d'en-tête
+            document.getElementById('kpi-session-pct').innerText = `+${sessionGainPct.toFixed(2)}%`;
+            document.getElementById('kpi-session-profit').innerText = `Gain net cible : +$${targetProfitDollar.toFixed(2)}`;
+            document.getElementById('kpi-target-balance').innerText = `$${targetFinalBalance.toFixed(2)}`;
+            document.getElementById('lbl-win-req').innerText = winTrades;
+
+            // Simulation pas à pas des trades déjà enregistrés + projection des trades restants
+            let balance = capital;
+            let winsSoFar = 0;
+            let lossesSoFar = 0;
+            let anyBelowMin = false;
+            let firstRawStake = 0;
+
+            const rowsData = [];
+            let sessionOutcome = 'IN_PROGRESS'; // 'IN_PROGRESS' | 'WON' | 'FAILED'
+
+            for (let i = 0; i < totalTrades; i++) {
+                const nRemaining = totalTrades - i;
+                const wRemaining = winTrades - winsSoFar;
+
+                if (sessionOutcome !== 'IN_PROGRESS') {
+                    rowsData.push({
+                        index: i + 1,
+                        status: 'SKIPPED',
+                        stake: 0,
+                        pnl: 0,
+                        balanceAfter: balance
+                    });
+                    continue;
+                }
+
+                const { rawStake, finalStake, belowMin } = computeStepStake(M, P, nRemaining, wRemaining, balance, targetFinalBalance);
+                if (i === 0) firstRawStake = rawStake;
+                if (belowMin) anyBelowMin = true;
+
+                if (i < results.length) {
+                    const res = results[i];
+                    let pnl = 0;
+                    if (res === 'W') {
+                        pnl = Math.round(finalStake * P * 100) / 100;
+                        balance = Math.round((balance + pnl) * 100) / 100;
+                        winsSoFar++;
+                    } else {
+                        pnl = -finalStake;
+                        balance = Math.round((balance + pnl) * 100) / 100;
+                        lossesSoFar++;
+                    }
+
+                    rowsData.push({
+                        index: i + 1,
+                        status: res,
+                        stake: finalStake,
+                        pnl,
+                        balanceAfter: balance
+                    });
+
+                    // Vérifier si session terminée
+                    if (winsSoFar >= winTrades) {
+                        sessionOutcome = 'WON';
+                    } else if ((totalTrades - (i + 1)) < (winTrades - winsSoFar) || balance < 1.00) {
+                        sessionOutcome = 'FAILED';
+                    }
+                } else {
+                    // Trade futur / en attente
+                    const isNext = (i === results.length);
+                    rowsData.push({
+                        index: i + 1,
+                        status: isNext ? 'NEXT' : 'PENDING',
+                        stake: isNext ? finalStake : null,
+                        pnl: isNext ? Math.round(finalStake * P * 100) / 100 : null,
+                        balanceAfter: null
+                    });
+                }
+            }
+
+            // Alerte plancher $1.00 si la mise théorique initiale était < $1.00
+            const minWarnEl = document.getElementById('min-stake-warning');
+            if (anyBelowMin) {
+                const minCapNeeded = firstRawStake > 0 ? Math.ceil((capital / firstRawStake) * 100) / 100 : capital;
+                document.getElementById('min-stake-msg').innerText =
+                    `Avec $${capital.toFixed(2)} sur ${totalTrades} trades (${winTrades}W), la mise théorique descend à $${firstRawStake.toFixed(2)}. Le logiciel applique automatiquement le minimum broker de $1.00 (capital recommandé pour ce palier : $${minCapNeeded.toFixed(2)} ou passez à ${Math.max(1, totalTrades - 1)} trades).`;
+                minWarnEl.classList.remove('hidden');
+            } else {
+                minWarnEl.classList.add('hidden');
+            }
+
+            // Mise à jour Solde Courant & Progression
+            const currentPnl = balance - capital;
+            const currentPnlPct = capital > 0 ? (currentPnl / capital) * 100 : 0;
+            const balEl = document.getElementById('kpi-current-balance');
+            balEl.innerText = `$${balance.toFixed(2)}`;
+            balEl.className = 'kpi-val ' + (currentPnl > 0 ? 'text-emerald' : currentPnl < 0 ? 'text-rose' : '');
+
+            document.getElementById('kpi-current-pnl').innerText =
+                `P&L Session : ${currentPnl >= 0 ? '+' : ''}$${currentPnl.toFixed(2)} (${currentPnlPct >= 0 ? '+' : ''}${currentPnlPct.toFixed(2)}%)`;
+            document.getElementById('kpi-progress-trades').innerText = `${results.length} / ${totalTrades}`;
+            document.getElementById('kpi-wins-count').innerText = `${winsSoFar} victoire(s) • ${lossesSoFar} perte(s)`;
+
+            // Panneau d'Exécution Active
+            const nextRow = rowsData.find(r => r.status === 'NEXT');
+            const btnWin = document.getElementById('btn-win');
+            const btnLoss = document.getElementById('btn-loss');
+            const btnUndo = document.getElementById('btn-undo');
+            const btnNextSess = document.getElementById('btn-next-session');
+
+            btnUndo.disabled = results.length === 0;
+
+            if (sessionOutcome === 'IN_PROGRESS' && nextRow) {
+                document.getElementById('exec-step-badge').innerText = `Trade #${nextRow.index} sur ${totalTrades}`;
+                document.getElementById('exec-stake').innerText = `$${nextRow.stake.toFixed(2)}`;
+                document.getElementById('exec-win-return').innerText = `+$${nextRow.pnl.toFixed(2)}`;
+                document.getElementById('exec-payout-lbl').innerText = payout;
+                btnWin.disabled = false;
+                btnLoss.disabled = false;
+            } else {
+                document.getElementById('exec-step-badge').innerText = sessionOutcome === 'WON' ? 'Session Validée' : 'Session Terminée';
+                document.getElementById('exec-stake').innerText = '$0.00';
+                document.getElementById('exec-win-return').innerText = '$0.00';
+                btnWin.disabled = true;
+                btnLoss.disabled = true;
+            }
+
+            // Bannière de Statut
+            const bannerEl = document.getElementById('session-status-banner');
+            const statusTitle = document.getElementById('status-title');
+            const statusDesc = document.getElementById('status-desc');
+
+            if (sessionOutcome === 'WON') {
+                bannerEl.className = 'banner banner-success';
+                statusTitle.innerText = `🎉 Hey ou atenn objektif ou pou jodi a ! (+${currentPnlPct.toFixed(2)}%)`;
+                statusDesc.innerText = `Objectif de ${winTrades} victoire(s) atteint. Profit net sécurisé : +$${currentPnl.toFixed(2)} (Nouveau capital : $${balance.toFixed(2)}).`;
+                btnNextSess.classList.remove('hidden');
+            } else if (sessionOutcome === 'FAILED') {
+                bannerEl.className = 'banner banner-danger';
+                statusTitle.innerText = `🛑 Hey ou rive nan stop loss pou jodi a`;
+                statusDesc.innerText = `Il n'est plus mathématiquement possible d'atteindre ${winTrades} victoire(s) sur les trades restants. Préservez votre capital.`;
+                btnNextSess.classList.add('hidden');
+            } else {
+                bannerEl.className = 'banner banner-info';
+                statusTitle.innerText = `Session en cours — ${winsSoFar}/${winTrades} victoire(s) requise(s)`;
+                statusDesc.innerText = `Objectif automatique : +${sessionGainPct.toFixed(2)}% (+$${targetProfitDollar.toFixed(2)}). Mise minimale garantie : $1.00.`;
+                btnNextSess.classList.add('hidden');
+            }
+
+            // Rendu du Tableau de Session
+            const tbody = document.getElementById('session-table-body');
+            tbody.innerHTML = rowsData.map(r => {
+                let statusHtml = '<span class="tag-wait">En attente</span>';
+                let rowClass = '';
+                if (r.status === 'W') statusHtml = '<span class="tag-w">WIN (W)</span>';
+                else if (r.status === 'L') statusHtml = '<span class="tag-l">LOSS (L)</span>';
+                else if (r.status === 'NEXT') {
+                    statusHtml = '<span class="badge-pill">Prochain Trade</span>';
+                    rowClass = 'row-active';
+                } else if (r.status === 'SKIPPED') {
+                    statusHtml = '<span class="tag-wait" style="opacity:0.5;">Non requis</span>';
+                }
+
+                const stakeStr = r.stake !== null && r.stake > 0 ? `$${r.stake.toFixed(2)}` : '—';
+                let pnlStr = '—';
+                if (r.status === 'W') pnlStr = `<span class="text-emerald" style="font-weight:700;">+$${r.pnl.toFixed(2)}</span>`;
+                else if (r.status === 'L') pnlStr = `<span class="text-rose" style="font-weight:700;">-$${Math.abs(r.pnl).toFixed(2)}</span>`;
+                else if (r.status === 'NEXT') pnlStr = `<span class="text-muted">Si W: +$${r.pnl.toFixed(2)}</span>`;
+
+                const balStr = r.balanceAfter !== null ? `<strong>$${r.balanceAfter.toFixed(2)}</strong>` : '—';
+
+                return `
+                    <tr class="${rowClass}">
+                        <td><strong>Trade #${r.index}</strong></td>
+                        <td>${statusHtml}</td>
+                        <td style="font-weight:700; color: var(--emerald);">${stakeStr}</td>
+                        <td>${pnlStr}</td>
+                        <td>${balStr}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            renderCompletedLogs();
+        }
+
+        function registerTrade(type) {
+            if (appState.tm.results.length >= appState.tm.totalTrades) return;
+            appState.tm.results.push(type);
+            saveState();
+            renderTradeManager();
+        }
+
+        function undoLastTrade() {
+            if (appState.tm.results.length === 0) return;
+            appState.tm.results.pop();
+            saveState();
+            renderTradeManager();
+        }
+
+        function startNewSession(capitalize) {
+            const { capital, payout, totalTrades, winTrades, results } = appState.tm;
+            if (results.length > 0) {
+                // Calculer le solde final de la session qui s'achève
+                const { M, P } = buildCombinatorialMatrix(totalTrades, winTrades, payout);
+                let bal = capital;
+                let wins = 0;
+                results.forEach((res, idx) => {
+                    const { finalStake } = computeStepStake(M, P, totalTrades - idx, winTrades - wins, bal, capital);
+                    if (res === 'W') {
+                        bal = Math.round((bal + finalStake * P) * 100) / 100;
+                        wins++;
+                    } else {
+                        bal = Math.round((bal - finalStake) * 100) / 100;
+                    }
+                });
+
+                const pnl = bal - capital;
+                appState.tm.completedLogs.unshift({
+                    date: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    startCap: capital,
+                    endCap: bal,
+                    pnl,
+                    won: wins >= winTrades
+                });
+
+                if (capitalize && bal >= 1) {
+                    appState.tm.capital = bal;
+                }
+            }
+
+            appState.tm.results = [];
+            saveState();
+            renderTradeManager();
+        }
+
+        function clearSessionLogs() {
+            appState.tm.completedLogs = [];
+            saveState();
+            renderCompletedLogs();
+        }
+
+        function renderCompletedLogs() {
+            const list = document.getElementById('completed-sessions-list');
+            const logs = appState.tm.completedLogs || [];
+            if (logs.length === 0) {
+                list.innerHTML = `<p style="font-size: 0.8rem; color: var(--text-muted); text-align: center; padding: 2rem 0;">Aucune session clôturée enregistrée.</p>`;
+                return;
+            }
+            list.innerHTML = logs.map((log, i) => `
+                <div style="background: var(--bg-input); border: 1px solid var(--border); border-radius: 10px; padding: 0.65rem 0.85rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem;">
+                    <div>
+                        <strong style="color: ${log.won ? 'var(--emerald)' : 'var(--rose)'};">Session #${logs.length - i} (${log.won ? 'Validée' : 'Stop'})</strong>
+                        <span style="display: block; font-size: 0.72rem; color: var(--text-muted);">$${log.startCap.toFixed(2)} &rarr; $${log.endCap.toFixed(2)} (${log.date})</span>
+                    </div>
+                    <strong style="color: ${log.pnl >= 0 ? 'var(--emerald)' : 'var(--rose)'};">${log.pnl >= 0 ? '+' : ''}$${log.pnl.toFixed(2)}</strong>
+                </div>
+            `).join('');
+        }
+
+        /* ============================================================================
+           3. LOGIQUE DU MODULE 2 : 30 DAYS COMPOUNDER (AVEC TOTAL RATIO & CHECKBOX)
+           ============================================================================ */
+        function syncFromTradeManager() {
+            const { capital, payout, totalTrades, winTrades } = appState.tm;
+            const { sessionGainRate } = buildCombinatorialMatrix(totalTrades, winTrades, payout);
+            appState.cp.capital = capital;
+            appState.cp.gainPct = parseFloat((sessionGainRate * 100).toFixed(6));
+            saveState();
+            renderCompounder();
+        }
+
+        function renderCompounder() {
+            const capInput = parseFloat(document.getElementById('cp-capital').value);
+            const gainInput = parseFloat(document.getElementById('cp-gain-pct').value);
+            const sessInput = parseInt(document.getElementById('cp-sessions').value);
+
+            appState.cp.capital = !isNaN(capInput) && capInput > 0 ? capInput : 40;
+            appState.cp.gainPct = !isNaN(gainInput) && gainInput >= 0 ? gainInput : 2.5914581;
+            appState.cp.sessionsPerDay = !isNaN(sessInput) && sessInput >= 1 ? sessInput : 5;
+            saveState();
+
+            const { capital, gainPct, sessionsPerDay, checkedDays } = appState.cp;
+
+            // Synchroniser inputs UI
+            document.getElementById('cp-capital').value = capital;
+            document.getElementById('cp-gain-pct').value = Number(gainPct.toFixed(4));
+            document.getElementById('cp-sessions').value = sessionsPerDay;
+
+            // TOTAL RATIO (%) = Account Gain (%) * Daily Sessions (ex: 2.59% * 5 = 12.96%)
+            const totalRatioLinear = gainPct * sessionsPerDay;
+            // Facteur composé quotidien réel sur les N sessions de la journée : (1 + r)^sessionsPerDay
+            const dailyCompoundFactor = Math.pow(1 + (gainPct / 100), sessionsPerDay);
+            const effectiveDailyPct = (dailyCompoundFactor - 1) * 100;
+
+            document.getElementById('cp-total-ratio').innerText = `${totalRatioLinear.toFixed(2)}%`;
+            document.getElementById('cp-effective-daily').innerText = `Composés (${sessionsPerDay} sess.) : +${effectiveDailyPct.toFixed(2)}% / jour`;
+
+            let currentCap = capital;
+            let leftHtml = '';
+            let rightHtml = '';
+            let checkedCount = 0;
+            let validatedCapital = capital;
+
+            for (let day = 1; day <= 30; day++) {
+                const startCap = currentCap;
+                const endCap = startCap * dailyCompoundFactor;
+                const dailyProfit = endCap - startCap;
+                const cumulativeProfit = endCap - capital;
+                const isChecked = !!checkedDays[day];
+
+                if (isChecked) {
+                    checkedCount++;
+                    validatedCapital = endCap;
+                }
+
+                const rowHtml = `
+                    <div class="cp-day-row ${isChecked ? 'row-checked' : ''}" id="cp-row-${day}">
+                        <span class="d-label">J${day}</span>
+                        <span>$${startCap.toFixed(2)}
+                            <span class="d-sub">+$${dailyProfit.toFixed(2)}</span>
+                        </span>
+                        <span class="d-end">$${endCap.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            <span class="d-sub">cumul +$${cumulativeProfit.toFixed(2)}</span>
+                        </span>
+                        <span class="d-check">
+                            <input type="checkbox" class="day-checkbox" ${isChecked ? 'checked' : ''} onchange="toggleDayCheck(${day}, this.checked)" aria-label="Valider Jour ${day}">
+                        </span>
+                    </div>
+                `;
+
+                if (day <= 15) leftHtml += rowHtml;
+                else rightHtml += rowHtml;
+
+                currentCap = endCap;
+            }
+
+            document.getElementById('compounder-col-left').innerHTML = leftHtml;
+            document.getElementById('compounder-col-right').innerHTML = rightHtml;
+
+            // Mise à jour KPIs Compounder
+            const totalProfit30 = currentCap - capital;
+            const progressPct = (checkedCount / 30) * 100;
+
+            document.getElementById('cp-kpi-start').innerText = `$${capital.toFixed(2)}`;
+            document.getElementById('cp-kpi-end').innerText = `$${currentCap.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            document.getElementById('cp-kpi-profit-total').innerText = `Profit net : +$${totalProfit30.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+            document.getElementById('cp-kpi-checked-cap').innerText = `$${validatedCapital.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            document.getElementById('cp-kpi-checked-days').innerText = `${checkedCount} / 30 jours validés`;
+            document.getElementById('cp-kpi-progress-pct').innerText = `${progressPct.toFixed(1)}%`;
+            document.getElementById('cp-progress-bar').style.width = `${progressPct}%`;
+        }
+
+        function toggleDayCheck(day, isChecked) {
+            if (isChecked) {
+                appState.cp.checkedDays[day] = true;
+            } else {
+                delete appState.cp.checkedDays[day];
+            }
+            saveState();
+            renderCompounder();
+        }
+
+        function resetCompounderChecks() {
+            appState.cp.checkedDays = {};
+            saveState();
+            renderCompounder();
+        }
+
+        /* ============================================================================
+           4. NAVIGATION, EXPORT / IMPORT JSON & INITIALISATION
+           ============================================================================ */
+        function switchTab(tabName) {
+            appState.activeTab = tabName;
+            saveState();
+
+            const viewTrader = document.getElementById('view-trader');
+            const viewComp = document.getElementById('view-compounder');
+            const btnTrader = document.getElementById('tab-btn-trader');
+            const btnComp = document.getElementById('tab-btn-compounder');
+
+            if (tabName === 'trader') {
+                viewTrader.classList.remove('hidden');
+                viewComp.classList.add('hidden');
+                btnTrader.classList.add('active');
+                btnComp.classList.remove('active');
+                renderTradeManager();
+            } else {
+                viewTrader.classList.add('hidden');
+                viewComp.classList.remove('hidden');
+                btnComp.classList.add('active');
+                btnTrader.classList.remove('active');
+                renderCompounder();
+            }
+        }
+
+        function toggleOfflineModal(show) {
+            const modal = document.getElementById('offline-modal');
+            if (show) modal.classList.remove('hidden');
+            else modal.classList.add('hidden');
+        }
+
+        function exportBackup() {
+            const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(appState, null, 2));
+            const a = document.createElement('a');
+            a.setAttribute('href', dataStr);
+            a.setAttribute('download', `System_Risk_Management_V2_${new Date().toISOString().slice(0, 10)}.json`);
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        }
+
+        function importBackup(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (imported.tm && imported.cp) {
+                        appState = imported;
+                        saveState();
+                        switchTab(appState.activeTab || 'trader');
+                    }
+                } catch (err) {
+                    console.error('Fichier JSON invalide', err);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        window.onload = function() {
+            loadState();
+            switchTab(appState.activeTab || 'trader');
+        };
+    </script>
+</body>
+</html>
