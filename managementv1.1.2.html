@@ -1,0 +1,1630 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/jpeg" href="logo.png">
+    <title>Kabuto's System — Capital & Risk Management Trades</title>
+    <!-- Fonts Google Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg-deep: #060913;
+            --bg-surface: #0c1222;
+            --bg-card: rgba(16, 24, 40, 0.75);
+            --bg-card-hover: rgba(22, 33, 56, 0.85);
+            --bg-input: #090e1b;
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-focus: #10b981;
+            
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            
+            --emerald: #10b981;
+            --emerald-glow: rgba(16, 185, 129, 0.25);
+            --emerald-soft: rgba(16, 185, 129, 0.12);
+            --teal: #14b8a6;
+            --teal-soft: rgba(20, 184, 166, 0.12);
+            --rose: #f43f5e;
+            --rose-glow: rgba(244, 63, 94, 0.25);
+            --rose-soft: rgba(244, 63, 94, 0.12);
+            --amber: #f59e0b;
+            --amber-soft: rgba(245, 158, 11, 0.12);
+            --indigo: #6366f1;
+
+            --radius-lg: 18px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+            --transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-deep);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.08) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(20, 184, 166, 0.08) 0px, transparent 50%),
+                radial-gradient(at 50% 100%, rgba(99, 102, 241, 0.05) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: var(--text-primary);
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-deep); }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 99px; }
+        ::-webkit-scrollbar-thumb:hover { background: #334155; }
+
+        /* Header */
+        header {
+            background: rgba(12, 18, 34, 0.82);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-subtle);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .header-inner {
+            max-width: 1380px;
+            margin: 0 auto;
+            padding: 0.9rem 1.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.25rem;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+        }
+        .brand-logo-container {
+            position: relative;
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #10b981 0%, #0d9488 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #022c22;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.35);
+        }
+        .brand-logo-container i {
+            stroke-width: 2.5;
+        }
+        .brand-title h1 {
+            font-size: 1.15rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            background: linear-gradient(to right, #ffffff, #cbd5e1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .brand-title span {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            margin-top: 1px;
+            font-weight: 500;
+        }
+        .pulse-online {
+            position: relative;
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--emerald);
+        }
+        .pulse-online::after {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            border-radius: 50%;
+            background: var(--emerald);
+            opacity: 0.5;
+            animation: pulse-ring 2s infinite ease-out;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); opacity: 0.8; }
+            100% { transform: scale(2.2); opacity: 0; }
+        }
+
+        /* Navigation Pills */
+        .nav-tabs {
+            display: flex;
+            background: rgba(9, 14, 27, 0.8);
+            padding: 0.3rem;
+            border-radius: 14px;
+            border: 1px solid var(--border-subtle);
+            gap: 0.25rem;
+        }
+        .tab-btn {
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            padding: 0.6rem 1.25rem;
+            border-radius: 11px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+        }
+        .tab-btn:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.04);
+        }
+        .tab-btn.active {
+            background: linear-gradient(135deg, #059669, #0d9488);
+            color: #ffffff;
+            box-shadow: 0 4px 14px rgba(5, 150, 105, 0.35);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .btn-outline {
+            background: rgba(16, 24, 40, 0.8);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+            padding: 0.5rem 0.85rem;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .btn-outline:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.16);
+            transform: translateY(-1px);
+        }
+
+        /* Main Container */
+        main {
+            max-width: 1380px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 4rem;
+            flex-grow: 1;
+        }
+        .hidden { display: none !important; }
+
+        /* Grids & Cards */
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.15rem; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.15rem; }
+        .grid-2-1 { display: grid; grid-template-columns: 1.85fr 1.15fr; gap: 1.35rem; }
+        @media (max-width: 1024px) {
+            .grid-4 { grid-template-columns: repeat(2, 1fr); }
+            .grid-2-1 { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 640px) {
+            .grid-4, .grid-3 { grid-template-columns: 1fr; }
+        }
+
+        .card {
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 1.35rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+            transition: var(--transition);
+        }
+        .card:hover {
+            border-color: rgba(255, 255, 255, 0.12);
+        }
+
+        .card-label {
+            font-size: 0.73rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .input-control, .select-control {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-primary);
+            padding: 0.7rem 0.95rem;
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            font-weight: 700;
+            outline: none;
+            transition: var(--transition);
+            font-family: inherit;
+        }
+        .input-control:focus, .select-control:focus {
+            border-color: var(--emerald);
+            box-shadow: 0 0 0 3px var(--emerald-glow);
+            background: #0d1527;
+        }
+        select.select-control option {
+            background-color: #0d1527;
+            color: #fff;
+        }
+
+        /* KPI Cards */
+        .kpi-card {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(180deg, rgba(20, 29, 48, 0.7) 0%, rgba(12, 18, 34, 0.8) 100%);
+        }
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+        }
+        .kpi-val {
+            font-size: 1.85rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-top: 0.2rem;
+            line-height: 1.2;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .kpi-sub {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 0.35rem;
+            display: block;
+            font-weight: 500;
+        }
+        .text-emerald { color: #10b981; }
+        .text-rose { color: #f43f5e; }
+        .text-teal { color: #2dd4bf; }
+        .text-amber { color: #f59e0b; }
+
+        /* Dynamic Banners */
+        .banner {
+            padding: 1.1rem 1.4rem;
+            border-radius: var(--radius-lg);
+            border: 1px solid;
+            margin-bottom: 1.35rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.25rem;
+            flex-wrap: wrap;
+            backdrop-filter: blur(10px);
+            transition: var(--transition);
+        }
+        .banner-info {
+            background: linear-gradient(135deg, rgba(20, 184, 166, 0.12), rgba(15, 23, 42, 0.6));
+            border-color: rgba(20, 184, 166, 0.3);
+            color: #ccfbf1;
+        }
+        .banner-success {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.18), rgba(15, 23, 42, 0.8));
+            border-color: rgba(16, 185, 129, 0.5);
+            color: #d1fae5;
+            box-shadow: 0 8px 30px rgba(16, 185, 129, 0.15);
+        }
+        .banner-danger {
+            background: linear-gradient(135deg, rgba(244, 63, 94, 0.18), rgba(15, 23, 42, 0.8));
+            border-color: rgba(244, 63, 94, 0.5);
+            color: #ffe4e6;
+            box-shadow: 0 8px 30px rgba(244, 63, 94, 0.15);
+        }
+        .banner-warning {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.14), rgba(15, 23, 42, 0.6));
+            border-color: rgba(245, 158, 11, 0.4);
+            color: #fef3c7;
+        }
+
+        /* Active Execution Hub */
+        .exec-box {
+            position: relative;
+            background: linear-gradient(145deg, #121c33 0%, #0a1120 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 1.75rem 2rem;
+            margin: 1.4rem 0;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            overflow: hidden;
+        }
+        .exec-box::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(to bottom, var(--emerald), var(--teal));
+        }
+        .badge-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.3rem 0.85rem;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: var(--emerald-soft);
+            color: var(--emerald);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        .btn-group { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
+        .btn {
+            border: none;
+            padding: 0.9rem 1.6rem;
+            border-radius: 12px;
+            font-size: 0.92rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.55rem;
+            font-family: inherit;
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none !important; }
+        
+        .btn-win {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            color: #ffffff;
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
+        }
+        .btn-win:hover:not(:disabled) {
+            background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.45);
+            transform: translateY(-2px);
+        }
+
+        .btn-loss {
+            background: linear-gradient(135deg, #e11d48 0%, #f43f5e 100%);
+            color: #ffffff;
+            box-shadow: 0 6px 20px rgba(244, 63, 94, 0.35);
+        }
+        .btn-loss:hover:not(:disabled) {
+            background: linear-gradient(135deg, #f43f5e 0%, #fb7185 100%);
+            box-shadow: 0 8px 24px rgba(244, 63, 94, 0.45);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+        .btn-secondary:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+        }
+
+        /* Tables & Lists */
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-subtle);
+            background: rgba(9, 14, 27, 0.4);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.88rem;
+        }
+        thead th {
+            background: rgba(9, 14, 27, 0.85);
+            color: var(--text-muted);
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            padding: 0.85rem 1.1rem;
+            border-bottom: 1px solid var(--border-subtle);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        tbody td {
+            padding: 0.85rem 1.1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+        }
+        tbody td:first-child {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 600;
+        }
+        tbody tr:last-child td { border-bottom: none; }
+        tbody tr { transition: background 0.15s ease; }
+        tbody tr:hover { background: rgba(255, 255, 255, 0.03); }
+        
+        tr.row-active {
+            background: rgba(16, 185, 129, 0.08) !important;
+            box-shadow: inset 3px 0 0 var(--emerald);
+        }
+        tr.row-checked { background: rgba(16, 185, 129, 0.1) !important; }
+
+        /* Badges */
+        .tag-w {
+            background: var(--emerald-soft);
+            color: var(--emerald);
+            padding: 0.25rem 0.65rem;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.74rem;
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .tag-l {
+            background: var(--rose-soft);
+            color: var(--rose);
+            padding: 0.25rem 0.65rem;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.74rem;
+            border: 1px solid rgba(244, 63, 94, 0.25);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .tag-wait {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+            padding: 0.25rem 0.65rem;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.74rem;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        /* Checkbox & Progress */
+        .day-checkbox {
+            width: 22px;
+            height: 22px;
+            accent-color: var(--emerald);
+            cursor: pointer;
+            border-radius: 6px;
+            transition: transform 0.15s;
+        }
+        .day-checkbox:hover {
+            transform: scale(1.15);
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 999px;
+            overflow: hidden;
+            margin-top: 0.75rem;
+            position: relative;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #059669, #14b8a6);
+            width: 0%;
+            border-radius: 999px;
+            transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 0 12px rgba(20, 184, 166, 0.5);
+        }
+
+        /* Compounder Two Column Layout */
+        .cp-two-cols {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+            margin-top: 0.75rem;
+        }
+        @media (max-width: 900px) {
+            .cp-two-cols { grid-template-columns: 1fr; }
+        }
+        .cp-col {
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            background: rgba(9, 14, 27, 0.5);
+        }
+        .cp-col-head {
+            background: rgba(16, 24, 40, 0.85);
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .cp-col-body {
+            max-height: 580px;
+            overflow-y: auto;
+        }
+        .cp-day-row {
+            display: grid;
+            grid-template-columns: 60px 1fr 1fr 48px;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.65rem 0.95rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            font-size: 0.84rem;
+            transition: background 0.15s;
+        }
+        .cp-day-row:last-child { border-bottom: none; }
+        .cp-day-row:hover { background: rgba(255, 255, 255, 0.03); }
+        .cp-day-row.row-checked {
+            background: rgba(16, 185, 129, 0.09) !important;
+        }
+        .cp-day-row .d-label {
+            font-weight: 700;
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+        }
+        .cp-day-row.row-checked .d-label {
+            text-decoration: line-through;
+            color: var(--emerald);
+        }
+        .cp-day-row .d-end {
+            font-weight: 800;
+            color: var(--teal);
+            font-size: 0.86rem;
+        }
+        .cp-day-row .d-profit {
+            color: var(--emerald);
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+        .cp-day-row .d-sub {
+            display: block;
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        .cp-day-row .d-check { text-align: center; }
+
+        /* Modal Backdrop */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(3, 7, 18, 0.8);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            z-index: 100;
+            animation: fadeIn 0.2s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .modal-box {
+            background: #0f172a;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 20px;
+            max-width: 540px;
+            width: 100%;
+            padding: 1.8rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+        }
+        .modal-box h3 {
+            font-size: 1.2rem;
+            font-weight: 800;
+            margin-bottom: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .modal-box p, .modal-box li {
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.65rem;
+            line-height: 1.6;
+        }
+        .modal-box ul {
+            padding-left: 1.25rem;
+            margin-bottom: 1.25rem;
+        }
+
+        footer {
+            border-top: 1px solid var(--border-subtle);
+            padding: 1.4rem;
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            background: rgba(6, 9, 19, 0.8);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="header-inner">
+            <div class="brand">
+                <img src="logo.png" alt="Logo" style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover;">
+                <div class="brand-title">
+                    <h1>KABUTO'S System</h1>
+                    <span><i class="pulse-online"></i> Pran san'w Pran tan'w &bull; Options Binaires</span>
+                </div>
+            </div>
+
+            <nav class="nav-tabs">
+                <button id="tab-btn-trader" class="tab-btn active" onclick="switchTab('trader')">
+                    <i data-lucide="bar-chart-2" style="width: 16px; height: 16px;"></i> Trade Manager
+                </button>
+                <button id="tab-btn-compounder" class="tab-btn" onclick="switchTab('compounder')">
+                    <i data-lucide="trending-up" style="width: 16px; height: 16px;"></i> 30 Days Compounder
+                </button>
+            </nav>
+
+            <div class="header-actions">
+                <button class="btn-outline" onclick="exportBackup()" title="Sauvegarder vos données en JSON">
+                    <i data-lucide="download" style="width: 15px; height: 15px;"></i> Exporter
+                </button>
+                <button class="btn-outline" onclick="document.getElementById('import-file').click()" title="Restaurer une sauvegarde">
+                    <i data-lucide="upload" style="width: 15px; height: 15px;"></i> Importer
+                </button>
+                <input type="file" id="import-file" accept=".json" class="hidden" onchange="importBackup(event)">
+                <button class="btn-outline" onclick="toggleOfflineModal(true)">
+                    <i data-lucide="smartphone" style="width: 15px; height: 15px;"></i> App Hors-Ligne
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- ========================================================= -->
+        <!-- MODULE 1 : TRADE MANAGER                                  -->
+        <!-- ========================================================= -->
+        <section id="view-trader">
+            <!-- Dynamic Status Banner -->
+            <div id="session-status-banner" class="banner banner-info">
+                <div style="display: flex; align-items: flex-start; gap: 0.85rem;">
+                    <div id="banner-icon-box" style="margin-top: 2px;">
+                        <i data-lucide="activity" style="width: 20px; height: 20px;"></i>
+                    </div>
+                    <div>
+                        <strong id="status-title" style="font-size: 0.98rem; font-weight: 700;">Session en cours — 0/1 victoire requise</strong>
+                        <p id="status-desc" style="font-size: 0.82rem; opacity: 0.9; margin-top: 2px;">Suivez la mise suggérée ci-dessous. Règle broker respectée (mise &ge; $1.00).</p>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.82rem;" onclick="startNewSession(false)">
+                        <i data-lucide="rotate-ccw" style="width: 14px; height: 14px;"></i> Réinitialiser
+                    </button>
+                    <button id="btn-next-session" class="btn btn-win hidden" style="padding: 0.5rem 1rem; font-size: 0.82rem;" onclick="startNewSession(true)">
+                        <i data-lucide="arrow-right-circle" style="width: 14px; height: 14px;"></i> Session Suivante (Capitaliser)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Floor Warning Alert -->
+            <div id="min-stake-warning" class="banner banner-warning hidden">
+                <div style="display: flex; align-items: flex-start; gap: 0.85rem;">
+                    <i data-lucide="alert-triangle" style="width: 20px; height: 20px; margin-top: 2px;"></i>
+                    <div>
+                        <strong style="font-size: 0.92rem;">Plancher Options Binaires ($1.00 minimum) activé</strong>
+                        <p id="min-stake-msg" style="font-size: 0.82rem; margin-top: 3px;"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configuration Inputs -->
+            <div class="grid-4" style="margin-bottom: 1.25rem;">
+                <div class="card">
+                    <label class="card-label" for="tm-capital">
+                        <span>Capital Initial ($)</span>
+                        <i data-lucide="wallet" style="width: 14px; height: 14px;"></i>
+                    </label>
+                    <input type="number" id="tm-capital" class="input-control mono" value="40.00" min="1" step="0.5" oninput="handleParamChange()">
+                </div>
+                <div class="card">
+                    <label class="card-label" for="tm-payout">
+                        <span>Payout Broker (%)</span>
+                        <i data-lucide="percent" style="width: 14px; height: 14px;"></i>
+                    </label>
+                    <input type="number" id="tm-payout" class="input-control mono" value="92" min="50" max="100" step="1" oninput="handleParamChange()">
+                </div>
+                <div class="card">
+                    <label class="card-label" for="tm-total-trades">
+                        <span>Total Trades (Série Max)</span>
+                        <i data-lucide="layers" style="width: 14px; height: 14px;"></i>
+                    </label>
+                    <select id="tm-total-trades" class="select-control mono" onchange="handleParamChange()">
+                        <option value="2">2 Trades</option>
+                        <option value="3">3 Trades</option>
+                        <option value="4">4 Trades</option>
+                        <option value="5" selected>5 Trades</option>
+                        <option value="6">6 Trades</option>
+                        <option value="7">7 Trades</option>
+                        <option value="8">8 Trades</option>
+                        <option value="9">9 Trades</option>
+                        <option value="10">10 Trades</option>
+                    </select>
+                </div>
+                <div class="card">
+                    <label class="card-label" for="tm-win-trades">
+                        <span>Win Trades (Victoires Requises)</span>
+                        <i data-lucide="target" style="width: 14px; height: 14px;"></i>
+                    </label>
+                    <select id="tm-win-trades" class="select-control mono" onchange="handleParamChange()">
+                        <option value="1" selected>1 Win Trade</option>
+                        <option value="2">2 Win Trades</option>
+                        <option value="3">3 Win Trades</option>
+                        <option value="4">4 Win Trades</option>
+                        <option value="5">5 Win Trades</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- KPI Cards Overview -->
+            <div class="grid-4" style="margin-bottom: 1.25rem;">
+                <div class="card kpi-card">
+                    <span class="card-label">Objectif Session (Auto)</span>
+                    <div id="kpi-session-pct" class="kpi-val text-emerald">+2.59%</div>
+                    <span id="kpi-session-profit" class="kpi-sub">Gain net cible : +$1.04</span>
+                </div>
+                <div class="card kpi-card">
+                    <span class="card-label">Solde Courant</span>
+                    <div id="kpi-current-balance" class="kpi-val">$40.00</div>
+                    <span id="kpi-current-pnl" class="kpi-sub">P&L Session : $0.00 (0.00%)</span>
+                </div>
+                <div class="card kpi-card">
+                    <span class="card-label">Capital Final Visé</span>
+                    <div id="kpi-target-balance" class="kpi-val text-teal">$41.04</div>
+                    <span class="kpi-sub">Après validation des <span id="lbl-win-req">1</span>W</span>
+                </div>
+                <div class="card kpi-card">
+                    <span class="card-label">Progression Session</span>
+                    <div id="kpi-progress-trades" class="kpi-val">0 / 5</div>
+                    <span id="kpi-wins-count" class="kpi-sub">0 victoire(s) &bull; 0 perte(s)</span>
+                </div>
+            </div>
+
+            <!-- Active Execution Box -->
+            <div class="exec-box">
+                <div>
+                    <span class="badge-pill" id="exec-step-badge">
+                        <i data-lucide="crosshair" style="width: 12px; height: 12px;"></i> Trade #1 sur 5
+                    </span>
+                    <h2 style="font-size: 1.95rem; font-weight: 800; margin-top: 0.5rem; letter-spacing: -0.02em;">
+                        Mise à placer : <span id="exec-stake" class="text-emerald mono">$1.13</span>
+                    </h2>
+                    <p style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 0.35rem;">
+                        Profit potentiel sur ce trade : <strong id="exec-win-return" class="text-teal mono">+$1.04</strong> 
+                        <span style="opacity: 0.8;">(Payout broker <span id="exec-payout-lbl">92</span>%)</span>
+                    </p>
+                </div>
+
+                <div class="btn-group">
+                    <button id="btn-win" class="btn btn-win" onclick="registerTrade('W')">
+                        <i data-lucide="check" style="width: 18px; height: 18px;"></i> WIN (W)
+                    </button>
+                    <button id="btn-loss" class="btn btn-loss" onclick="registerTrade('L')">
+                        <i data-lucide="x" style="width: 18px; height: 18px;"></i> LOSS (L)
+                    </button>
+                    <button id="btn-undo" class="btn btn-secondary" onclick="undoLastTrade()" disabled>
+                        <i data-lucide="undo-2" style="width: 16px; height: 16px;"></i> Annuler
+                    </button>
+                </div>
+            </div>
+
+            <!-- Plan Table & History Log -->
+            <div class="grid-2-1">
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 style="font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: 0.45rem;">
+                            <i data-lucide="cpu" style="width: 18px; height: 18px; color: var(--teal);"></i> 
+                            Plan de Trades de la Session
+                        </h3>
+                        <span style="font-size: 0.76rem; color: var(--text-muted); background: rgba(255,255,255,0.05); padding: 0.25rem 0.6rem; border-radius: 6px;">
+                            Mise min. : $1.00
+                        </span>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Trade</th>
+                                    <th>Statut</th>
+                                    <th>Mise ($)</th>
+                                    <th>Gain / Perte ($)</th>
+                                    <th>Solde Résultant ($)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="session-table-body">
+                                <!-- Dynamic content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card" style="display: flex; flex-direction: column;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 style="font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: 0.45rem;">
+                            <i data-lucide="history" style="width: 18px; height: 18px; color: var(--indigo);"></i> 
+                            Journal des Sessions
+                        </h3>
+                        <button class="btn-outline" style="padding: 0.3rem 0.6rem; font-size: 0.72rem;" onclick="clearSessionLogs()">
+                            <i data-lucide="trash-2" style="width: 13px; height: 13px;"></i> Vider
+                        </button>
+                    </div>
+                    <div id="completed-sessions-list" style="flex-grow: 1; max-height: 380px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.65rem;">
+                        <p style="font-size: 0.82rem; color: var(--text-muted); text-align: center; padding: 3rem 0;">Aucune session clôturée enregistrée.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- MODULE 2 : 30 DAYS COMPOUNDER                             -->
+        <!-- ========================================================= -->
+        <section id="view-compounder" class="hidden">
+            <!-- Compounder Configuration Card -->
+            <div class="card" style="margin-bottom: 1.35rem;">
+                <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.85rem; margin-bottom: 1.15rem;">
+                    <div>
+                        <h3 style="font-size: 1.05rem; font-weight: 800; display: flex; align-items: center; gap: 0.45rem;">
+                            <i data-lucide="sliders" style="width: 18px; height: 18px; color: var(--emerald);"></i>
+                            Paramètres du Plan sur 30 Jours
+                        </h3>
+                        <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;">Planifiez votre croissance exponentielle avec la magie des intérêts composés.</p>
+                    </div>
+                    <button class="btn-outline" onclick="syncFromTradeManager()">
+                        <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i> Synchroniser avec Trade Manager (<span id="sync-pct-preview" class="mono">2.59%</span>)
+                    </button>
+                </div>
+
+                <div class="grid-4">
+                    <div>
+                        <label class="card-label" for="cp-capital">Capital Initial ($)</label>
+                        <input type="number" id="cp-capital" class="input-control mono" value="40.00" min="1" step="1" oninput="handleCompounderInput()">
+                    </div>
+                    <div>
+                        <label class="card-label" for="cp-gain-pct">Account Gain / Session (%)</label>
+                        <input type="number" id="cp-gain-pct" class="input-control mono" value="2.591458" min="0.01" step="0.01" oninput="handleCompounderInput()">
+                    </div>
+                    <div>
+                        <label class="card-label" for="cp-sessions">Daily Sessions (Sessions / Jour)</label>
+                        <input type="number" id="cp-sessions" class="input-control mono" value="5" min="1" max="50" step="1" oninput="handleCompounderInput()">
+                    </div>
+                    <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: var(--radius-md); padding: 0.8rem 1rem;">
+                        <span class="card-label" style="color: var(--emerald); margin-bottom: 0.2rem;">Total Ratio (%) Quotidien</span>
+                        <div id="cp-total-ratio" class="mono" style="font-size: 1.55rem; font-weight: 800; color: var(--emerald);">12.96%</div>
+                        <span style="font-size: 0.74rem; color: var(--text-secondary);" id="cp-effective-daily">Composés : +13.65% / jour</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Compounder Summary KPIs -->
+            <div class="grid-4" style="margin-bottom: 1.35rem;">
+                <div class="card kpi-card">
+                    <span class="card-label">Capital Jour 1</span>
+                    <div id="cp-kpi-start" class="kpi-val">$40.00</div>
+                    <span class="kpi-sub">Base de départ</span>
+                </div>
+                <div class="card kpi-card">
+                    <span class="card-label">Objectif Jour 30</span>
+                    <div id="cp-kpi-end" class="kpi-val text-emerald">$1,544.00</div>
+                    <span id="cp-kpi-profit-total" class="kpi-sub">Profit net : +$1,504.00</span>
+                </div>
+                <div class="card kpi-card">
+                    <span class="card-label">Capital Validé (Checklist)</span>
+                    <div id="cp-kpi-checked-cap" class="kpi-val text-teal">$40.00</div>
+                    <span id="cp-kpi-checked-days" class="kpi-sub">0 / 30 jours validés</span>
+                </div>
+                <div class="card kpi-card">
+                    <span class="card-label">Avancement du Challenge</span>
+                    <div id="cp-kpi-progress-pct" class="kpi-val">0.0%</div>
+                    <div class="progress-track">
+                        <div id="cp-progress-bar" class="progress-fill"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Roadmap 30 Days Card -->
+            <div class="card">
+                <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.85rem; margin-bottom: 1.15rem;">
+                    <div>
+                        <h3 style="font-size: 1.05rem; font-weight: 800; display: flex; align-items: center; gap: 0.45rem;">
+                            <i data-lucide="calendar" style="width: 18px; height: 18px; color: var(--teal);"></i>
+                            Feuille de Route — 30 Jours Compounding
+                        </h3>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">Cochez la case à droite de chaque jour une fois vos sessions quotidiennes terminées.</p>
+                    </div>
+                    <button class="btn-outline" onclick="resetCompounderChecks()">
+                        <i data-lucide="rotate-ccw" style="width: 14px; height: 14px;"></i> Réinitialiser les cases
+                    </button>
+                </div>
+
+                <div class="cp-two-cols" id="compounder-cols">
+                    <div class="cp-col">
+                        <div class="cp-col-head">
+                            <span>Jours 1 à 15 (Phase Décollage)</span>
+                            <span class="badge-pill" style="font-size: 0.68rem; padding: 0.15rem 0.5rem;">Bloc A</span>
+                        </div>
+                        <div class="cp-col-body" id="compounder-col-left"></div>
+                    </div>
+                    <div class="cp-col">
+                        <div class="cp-col-head">
+                            <span>Jours 16 à 30 (Phase Accélération)</span>
+                            <span class="badge-pill" style="font-size: 0.68rem; padding: 0.15rem 0.5rem;">Bloc B</span>
+                        </div>
+                        <div class="cp-col-body" id="compounder-col-right"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 0.6rem; flex-wrap: wrap;">
+            <span>KABUTO'S System Risk Management V2 Pro</span>
+            <span>&bull;</span>
+            <span>Calculs Combinatoires Exacts (Algo)</span>
+            <span>&bull;</span>
+            <span style="color: var(--emerald); font-weight: 600;">100% Hors-Ligne & Données Locales Sécurisées</span>
+        </div>
+    </footer>
+
+    <!-- Offline Modal Help -->
+    <div id="offline-modal" class="modal-backdrop hidden" onclick="if(event.target===this) toggleOfflineModal(false)">
+        <div class="modal-box">
+            <h3>
+                <i data-lucide="smartphone" style="width: 22px; height: 22px; color: var(--emerald);"></i>
+                Utiliser comme Application Hors-Ligne
+            </h3>
+            <p>Ce logiciel est entièrement autonome (un seul fichier HTML sans serveur). Toutes vos données sont sauvegardées automatiquement dans votre appareil.</p>
+            <ul>
+                <li><strong>Sur PC / Mac (Chrome, Edge, Brave) :</strong> Cliquez sur l'icône d'installation dans la barre d'adresse ou allez dans <em>Menu &rarr; Enregistrer et partager &rarr; Installer la page en tant qu'application</em>.</li>
+                <li><strong>Sur Android / iPhone :</strong> Ouvrez ce fichier dans votre navigateur, puis appuyez sur <em>Partager / Menu &rarr; Ajouter à l'écran d'accueil</em>.</li>
+                <li><strong>Sauvegarde de sécurité :</strong> Utilisez le bouton <strong>Exporter</strong> en haut à droite pour conserver une copie JSON de vos progrès.</li>
+            </ul>
+            <div style="text-align: right;">
+                <button class="btn btn-win" style="padding: 0.6rem 1.4rem;" onclick="toggleOfflineModal(false)">
+                    Compris
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ============================================================================
+           1. ALGORITHME COMBINATOIRE EXACT & LOGIQUE D'APPLICATION
+           ============================================================================ */
+        const STORAGE_KEY = 'srm_v2_offline_state';
+
+        let appState = {
+            activeTab: 'trader',
+            tm: {
+                capital: 40.00,
+                payout: 92,
+                totalTrades: 5,
+                winTrades: 1,
+                results: [],
+                completedLogs: []
+            },
+            cp: {
+                capital: 40.00,
+                gainPct: 2.5914581,
+                sessionsPerDay: 5,
+                checkedDays: {}
+            }
+        };
+
+        function loadState() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (parsed.tm) appState.tm = { ...appState.tm, ...parsed.tm };
+                    if (parsed.cp) appState.cp = { ...appState.cp, ...parsed.cp };
+                    if (parsed.activeTab) appState.activeTab = parsed.activeTab;
+                }
+            } catch (e) {
+                console.warn('Erreur lecture localStorage:', e);
+            }
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+            } catch (e) {
+                console.warn('Erreur sauvegarde localStorage:', e);
+            }
+        }
+
+        function buildCombinatorialMatrix(N, W, payoutPct) {
+            const P = payoutPct / 100;
+            const M = Array.from({ length: N + 1 }, () => Array(W + 1).fill(0));
+
+            for (let n = 0; n <= N; n++) {
+                M[n][0] = 1;
+            }
+            for (let n = 1; n <= N; n++) {
+                for (let w = 1; w <= W; w++) {
+                    if (n < w) {
+                        M[n][w] = 0;
+                    } else {
+                        M[n][w] = (M[n - 1][w - 1] + P * M[n - 1][w]) / (1 + P);
+                    }
+                }
+            }
+
+            const baseProb = M[N][W];
+            const sessionGainRate = baseProb > 0 ? (1 - baseProb) / baseProb : 0;
+            return { M, P, sessionGainRate };
+        }
+
+        function computeStepStake(M, P, n, w, currentBalance, targetBalance) {
+            if (w <= 0 || n <= 0 || n < w || currentBalance <= 0) return { rawStake: 0, finalStake: 0, belowMin: false };
+
+            const numerator = M[n - 1][w - 1] - M[n - 1][w];
+            const denominator = (1 + P) * M[n][w];
+            let rawStake = denominator > 0 ? currentBalance * (numerator / denominator) : 0;
+
+            let belowMin = false;
+            let finalStake = rawStake;
+            if (finalStake < 1.00) {
+                belowMin = true;
+                finalStake = Math.min(1.00, currentBalance);
+            }
+            finalStake = Math.min(finalStake, currentBalance);
+
+            return {
+                rawStake,
+                finalStake: Math.round(finalStake * 100) / 100,
+                belowMin
+            };
+        }
+
+        /* ============================================================================
+           2. MODULE TRADE MANAGER
+           ============================================================================ */
+        function handleParamChange() {
+            const cap = parseFloat(document.getElementById('tm-capital').value) || 40;
+            const payout = parseFloat(document.getElementById('tm-payout').value) || 92;
+            const totalTrades = parseInt(document.getElementById('tm-total-trades').value) || 5;
+            const winSelect = document.getElementById('tm-win-trades');
+
+            Array.from(winSelect.options).forEach(opt => {
+                opt.disabled = parseInt(opt.value) > totalTrades;
+            });
+            let winTrades = parseInt(winSelect.value) || 1;
+            if (winTrades > totalTrades) {
+                winTrades = totalTrades;
+                winSelect.value = winTrades;
+            }
+
+            appState.tm.capital = Math.max(1, cap);
+            appState.tm.payout = Math.min(100, Math.max(1, payout));
+            appState.tm.totalTrades = totalTrades;
+            appState.tm.winTrades = winTrades;
+
+            if (appState.tm.results.length > totalTrades) {
+                appState.tm.results = appState.tm.results.slice(0, totalTrades);
+            }
+
+            saveState();
+            renderTradeManager();
+        }
+
+        function renderTradeManager() {
+            const { capital, payout, totalTrades, winTrades, results } = appState.tm;
+
+            document.getElementById('tm-capital').value = capital;
+            document.getElementById('tm-payout').value = payout;
+            document.getElementById('tm-total-trades').value = totalTrades;
+            document.getElementById('tm-win-trades').value = winTrades;
+
+            const { M, P, sessionGainRate } = buildCombinatorialMatrix(totalTrades, winTrades, payout);
+            const sessionGainPct = sessionGainRate * 100;
+            const targetProfitDollar = capital * sessionGainRate;
+            const targetFinalBalance = capital + targetProfitDollar;
+
+            document.getElementById('sync-pct-preview').innerText = sessionGainPct.toFixed(2) + '%';
+            document.getElementById('kpi-session-pct').innerText = `+${sessionGainPct.toFixed(2)}%`;
+            document.getElementById('kpi-session-profit').innerText = `Gain net cible : +$${targetProfitDollar.toFixed(2)}`;
+            document.getElementById('kpi-target-balance').innerText = `$${targetFinalBalance.toFixed(2)}`;
+            document.getElementById('lbl-win-req').innerText = winTrades;
+
+            let balance = capital;
+            let winsSoFar = 0;
+            let lossesSoFar = 0;
+            let anyBelowMin = false;
+            let firstRawStake = 0;
+
+            const rowsData = [];
+            let sessionOutcome = 'IN_PROGRESS';
+
+            for (let i = 0; i < totalTrades; i++) {
+                const nRemaining = totalTrades - i;
+                const wRemaining = winTrades - winsSoFar;
+
+                if (sessionOutcome !== 'IN_PROGRESS') {
+                    rowsData.push({
+                        index: i + 1,
+                        status: 'SKIPPED',
+                        stake: 0,
+                        pnl: 0,
+                        balanceAfter: balance
+                    });
+                    continue;
+                }
+
+                const { rawStake, finalStake, belowMin } = computeStepStake(M, P, nRemaining, wRemaining, balance, targetFinalBalance);
+                if (i === 0) firstRawStake = rawStake;
+                if (belowMin) anyBelowMin = true;
+
+                if (i < results.length) {
+                    const res = results[i];
+                    let pnl = 0;
+                    if (res === 'W') {
+                        pnl = Math.round(finalStake * P * 100) / 100;
+                        balance = Math.round((balance + pnl) * 100) / 100;
+                        winsSoFar++;
+                    } else {
+                        pnl = -finalStake;
+                        balance = Math.round((balance + pnl) * 100) / 100;
+                        lossesSoFar++;
+                    }
+
+                    rowsData.push({
+                        index: i + 1,
+                        status: res,
+                        stake: finalStake,
+                        pnl,
+                        balanceAfter: balance
+                    });
+
+                    if (winsSoFar >= winTrades) {
+                        sessionOutcome = 'WON';
+                    } else if ((totalTrades - (i + 1)) < (winTrades - winsSoFar) || balance < 1.00) {
+                        sessionOutcome = 'FAILED';
+                    }
+                } else {
+                    const isNext = (i === results.length);
+                    rowsData.push({
+                        index: i + 1,
+                        status: isNext ? 'NEXT' : 'PENDING',
+                        stake: isNext ? finalStake : null,
+                        pnl: isNext ? Math.round(finalStake * P * 100) / 100 : null,
+                        balanceAfter: null
+                    });
+                }
+            }
+
+            const minWarnEl = document.getElementById('min-stake-warning');
+            if (anyBelowMin) {
+                const minCapNeeded = firstRawStake > 0 ? Math.ceil((capital / firstRawStake) * 100) / 100 : capital;
+                document.getElementById('min-stake-msg').innerText =
+                    `Avec $${capital.toFixed(2)} sur ${totalTrades} trades (${winTrades}W), la mise théorique descend à $${firstRawStake.toFixed(2)}. Le logiciel applique automatiquement le minimum broker de $1.00 (capital recommandé pour ce palier : $${minCapNeeded.toFixed(2)} ou passez à ${Math.max(1, totalTrades - 1)} trades).`;
+                minWarnEl.classList.remove('hidden');
+            } else {
+                minWarnEl.classList.add('hidden');
+            }
+
+            const currentPnl = balance - capital;
+            const currentPnlPct = capital > 0 ? (currentPnl / capital) * 100 : 0;
+            const balEl = document.getElementById('kpi-current-balance');
+            balEl.innerText = `$${balance.toFixed(2)}`;
+            balEl.className = 'kpi-val mono ' + (currentPnl > 0 ? 'text-emerald' : currentPnl < 0 ? 'text-rose' : '');
+
+            document.getElementById('kpi-current-pnl').innerText =
+                `P&L Session : ${currentPnl >= 0 ? '+' : ''}$${currentPnl.toFixed(2)} (${currentPnlPct >= 0 ? '+' : ''}${currentPnlPct.toFixed(2)}%)`;
+            document.getElementById('kpi-progress-trades').innerText = `${results.length} / ${totalTrades}`;
+            document.getElementById('kpi-wins-count').innerText = `${winsSoFar} victoire(s) • ${lossesSoFar} perte(s)`;
+
+            const nextRow = rowsData.find(r => r.status === 'NEXT');
+            const btnWin = document.getElementById('btn-win');
+            const btnLoss = document.getElementById('btn-loss');
+            const btnUndo = document.getElementById('btn-undo');
+            const btnNextSess = document.getElementById('btn-next-session');
+
+            btnUndo.disabled = results.length === 0;
+
+            if (sessionOutcome === 'IN_PROGRESS' && nextRow) {
+                document.getElementById('exec-step-badge').innerHTML = `<i data-lucide="crosshair" style="width: 12px; height: 12px;"></i> Trade #${nextRow.index} sur ${totalTrades}`;
+                document.getElementById('exec-stake').innerText = `$${nextRow.stake.toFixed(2)}`;
+                document.getElementById('exec-win-return').innerText = `+$${nextRow.pnl.toFixed(2)}`;
+                document.getElementById('exec-payout-lbl').innerText = payout;
+                btnWin.disabled = false;
+                btnLoss.disabled = false;
+            } else {
+                document.getElementById('exec-step-badge').innerHTML = `<i data-lucide="${sessionOutcome === 'WON' ? 'award' : 'alert-octagon'}" style="width: 12px; height: 12px;"></i> ${sessionOutcome === 'WON' ? 'Session Validée' : 'Session Terminée'}`;
+                document.getElementById('exec-stake').innerText = '$0.00';
+                document.getElementById('exec-win-return').innerText = '$0.00';
+                btnWin.disabled = true;
+                btnLoss.disabled = true;
+            }
+
+            const bannerEl = document.getElementById('session-status-banner');
+            const statusTitle = document.getElementById('status-title');
+            const statusDesc = document.getElementById('status-desc');
+            const iconBox = document.getElementById('banner-icon-box');
+
+            if (sessionOutcome === 'WON') {
+                bannerEl.className = 'banner banner-success';
+                statusTitle.innerText = `🎉 Hey ou atenn objektif ou pou jodi a ! (+${currentPnlPct.toFixed(2)}%)`;
+                statusDesc.innerText = `Objectif de ${winTrades} victoire(s) atteint. Profit net sécurisé : +$${currentPnl.toFixed(2)} (Nouveau capital : $${balance.toFixed(2)}).`;
+                iconBox.innerHTML = '<i data-lucide="check-circle" style="width: 22px; height: 22px; color: var(--emerald);"></i>';
+                btnNextSess.classList.remove('hidden');
+            } else if (sessionOutcome === 'FAILED') {
+                bannerEl.className = 'banner banner-danger';
+                statusTitle.innerText = `🛑 Hey ou rive nan stop loss pou jodi a`;
+                statusDesc.innerText = `Il n'est plus mathématiquement possible d'atteindre ${winTrades} victoire(s) sur les trades restants. Préservez votre capital.`;
+                iconBox.innerHTML = '<i data-lucide="alert-octagon" style="width: 22px; height: 22px; color: var(--rose);"></i>';
+                btnNextSess.classList.add('hidden');
+            } else {
+                bannerEl.className = 'banner banner-info';
+                statusTitle.innerText = `Session en cours — ${winsSoFar}/${winTrades} victoire(s) requise(s)`;
+                statusDesc.innerText = `Objectif automatique : +${sessionGainPct.toFixed(2)}% (+$${targetProfitDollar.toFixed(2)}). Mise minimale garantie : $1.00.`;
+                iconBox.innerHTML = '<i data-lucide="activity" style="width: 22px; height: 22px; color: var(--teal);"></i>';
+                btnNextSess.classList.add('hidden');
+            }
+
+            const tbody = document.getElementById('session-table-body');
+            tbody.innerHTML = rowsData.map(r => {
+                let statusHtml = '<span class="tag-wait">En attente</span>';
+                let rowClass = '';
+                if (r.status === 'W') statusHtml = '<span class="tag-w">✓ WIN</span>';
+                else if (r.status === 'L') statusHtml = '<span class="tag-l">✕ LOSS</span>';
+                else if (r.status === 'NEXT') {
+                    statusHtml = '<span class="badge-pill" style="font-size:0.68rem; padding: 0.15rem 0.55rem;"><i data-lucide="play" style="width: 10px; height: 10px;"></i> Prochain</span>';
+                    rowClass = 'row-active';
+                } else if (r.status === 'SKIPPED') {
+                    statusHtml = '<span class="tag-wait" style="opacity:0.4;">Non requis</span>';
+                }
+
+                const stakeStr = r.stake !== null && r.stake > 0 ? `$${r.stake.toFixed(2)}` : '—';
+                let pnlStr = '—';
+                if (r.status === 'W') pnlStr = `<span class="text-emerald" style="font-weight:700;">+$${r.pnl.toFixed(2)}</span>`;
+                else if (r.status === 'L') pnlStr = `<span class="text-rose" style="font-weight:700;">-$${Math.abs(r.pnl).toFixed(2)}</span>`;
+                else if (r.status === 'NEXT') pnlStr = `<span class="text-secondary" style="font-size:0.78rem;">Si W: +$${r.pnl.toFixed(2)}</span>`;
+
+                const balStr = r.balanceAfter !== null ? `<strong>$${r.balanceAfter.toFixed(2)}</strong>` : '—';
+
+                return `
+                    <tr class="${rowClass}">
+                        <td><strong>Trade #${r.index}</strong></td>
+                        <td>${statusHtml}</td>
+                        <td style="font-weight:700; color: var(--emerald);">${stakeStr}</td>
+                        <td>${pnlStr}</td>
+                        <td>${balStr}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            renderCompletedLogs();
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function registerTrade(type) {
+            if (appState.tm.results.length >= appState.tm.totalTrades) return;
+            appState.tm.results.push(type);
+            saveState();
+            renderTradeManager();
+        }
+
+        function undoLastTrade() {
+            if (appState.tm.results.length === 0) return;
+            appState.tm.results.pop();
+            saveState();
+            renderTradeManager();
+        }
+
+        function startNewSession(capitalize) {
+            const { capital, payout, totalTrades, winTrades, results } = appState.tm;
+            if (results.length > 0) {
+                const { M, P } = buildCombinatorialMatrix(totalTrades, winTrades, payout);
+                let bal = capital;
+                let wins = 0;
+                results.forEach((res, idx) => {
+                    const { finalStake } = computeStepStake(M, P, totalTrades - idx, winTrades - wins, bal, capital);
+                    if (res === 'W') {
+                        bal = Math.round((bal + finalStake * P) * 100) / 100;
+                        wins++;
+                    } else {
+                        bal = Math.round((bal - finalStake) * 100) / 100;
+                    }
+                });
+
+                const pnl = bal - capital;
+                appState.tm.completedLogs.unshift({
+                    date: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    startCap: capital,
+                    endCap: bal,
+                    pnl,
+                    won: wins >= winTrades
+                });
+
+                if (capitalize && bal >= 1) {
+                    appState.tm.capital = bal;
+                }
+            }
+
+            appState.tm.results = [];
+            saveState();
+            renderTradeManager();
+        }
+
+        function clearSessionLogs() {
+            appState.tm.completedLogs = [];
+            saveState();
+            renderCompletedLogs();
+        }
+
+        function renderCompletedLogs() {
+            const list = document.getElementById('completed-sessions-list');
+            const logs = appState.tm.completedLogs || [];
+            if (logs.length === 0) {
+                list.innerHTML = `<p style="font-size: 0.82rem; color: var(--text-muted); text-align: center; padding: 3rem 0;">Aucune session clôturée enregistrée.</p>`;
+                return;
+            }
+            list.innerHTML = logs.map((log) => `
+                <div style="background: rgba(9, 14, 27, 0.6); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.84rem;">
+                    <div>
+                        <div style="font-weight: 700; display: flex; align-items: center; gap: 0.4rem;">
+                            <span class="${log.won ? 'tag-w' : 'tag-l'}" style="font-size: 0.68rem; padding: 0.15rem 0.45rem;">${log.won ? 'GAGNÉE' : 'ARRÊT'}</span>
+                            <span class="mono">$${log.startCap.toFixed(2)} &rarr; $${log.endCap.toFixed(2)}</span>
+                        </div>
+                        <span style="font-size: 0.72rem; color: var(--text-muted);">${log.date}</span>
+                    </div>
+                    <div style="text-align: right;">
+                        <strong class="${log.pnl >= 0 ? 'text-emerald' : 'text-rose'} mono" style="font-size: 0.95rem;">
+                            ${log.pnl >= 0 ? '+' : ''}$${log.pnl.toFixed(2)}
+                        </strong>
+                    </div>
+                </div>
+            `).join('');
+            if (window.lucide) lucide.createIcons();
+        }
+
+        /* ============================================================================
+           3. MODULE 30 DAYS COMPOUNDER
+           ============================================================================ */
+        function handleCompounderInput() {
+            const cap = parseFloat(document.getElementById('cp-capital').value) || 40;
+            const gainPct = parseFloat(document.getElementById('cp-gain-pct').value) || 2.59;
+            const sess = parseInt(document.getElementById('cp-sessions').value) || 5;
+
+            appState.cp.capital = Math.max(1, cap);
+            appState.cp.gainPct = Math.max(0.01, gainPct);
+            appState.cp.sessionsPerDay = Math.max(1, sess);
+
+            saveState();
+            renderCompounder();
+        }
+
+        function syncFromTradeManager() {
+            const { totalTrades, winTrades, payout, capital } = appState.tm;
+            const { sessionGainRate } = buildCombinatorialMatrix(totalTrades, winTrades, payout);
+            const sessionGainPct = sessionGainRate * 100;
+
+            appState.cp.gainPct = sessionGainPct;
+            appState.cp.capital = capital;
+            document.getElementById('cp-gain-pct').value = sessionGainPct.toFixed(6);
+            document.getElementById('cp-capital').value = capital.toFixed(2);
+
+            saveState();
+            renderCompounder();
+        }
+
+        function renderCompounder() {
+            const { capital, gainPct, sessionsPerDay, checkedDays } = appState.cp;
+
+            document.getElementById('cp-capital').value = capital;
+            document.getElementById('cp-gain-pct').value = gainPct;
+            document.getElementById('cp-sessions').value = sessionsPerDay;
+
+            const linearDailyRate = gainPct * sessionsPerDay;
+            const sessionMultiplier = 1 + (gainPct / 100);
+            const dailyEffectiveMultiplier = Math.pow(sessionMultiplier, sessionsPerDay);
+            const dailyEffectivePct = (dailyEffectiveMultiplier - 1) * 100;
+
+            document.getElementById('cp-total-ratio').innerText = `${linearDailyRate.toFixed(2)}%`;
+            document.getElementById('cp-effective-daily').innerText = `Composés : +${dailyEffectivePct.toFixed(2)}% / jour`;
+
+            let currentCap = capital;
+            const daysData = [];
+
+            for (let day = 1; day <= 30; day++) {
+                const dayStart = currentCap;
+                const dayEnd = dayStart * dailyEffectiveMultiplier;
+                const dayProfit = dayEnd - dayStart;
+                const isChecked = !!checkedDays[day];
+
+                daysData.push({
+                    day,
+                    start: dayStart,
+                    end: dayEnd,
+                    profit: dayProfit,
+                    checked: isChecked
+                });
+
+                currentCap = dayEnd;
+            }
+
+            const day1Start = capital;
+            const day30End = daysData[29].end;
+            const totalNetProfit = day30End - day1Start;
+
+            document.getElementById('cp-kpi-start').innerText = `$${day1Start.toFixed(2)}`;
+            document.getElementById('cp-kpi-end').innerText = `$${day30End.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            document.getElementById('cp-kpi-profit-total').innerText = `Profit net : +$${totalNetProfit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+            let checkedCount = 0;
+            let validatedCapital = capital;
+            for (let i = 0; i < 30; i++) {
+                if (daysData[i].checked) {
+                    checkedCount++;
+                    validatedCapital = daysData[i].end;
+                }
+            }
+
+            document.getElementById('cp-kpi-checked-cap').innerText = `$${validatedCapital.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            document.getElementById('cp-kpi-checked-days').innerText = `${checkedCount} / 30 jours validés`;
+
+            const progressPct = ((checkedCount / 30) * 100).toFixed(1);
+            document.getElementById('cp-kpi-progress-pct').innerText = `${progressPct}%`;
+            document.getElementById('cp-progress-bar').style.width = `${progressPct}%`;
+
+            const colLeft = document.getElementById('compounder-col-left');
+            const colRight = document.getElementById('compounder-col-right');
+
+            const renderRow = (d) => `
+                <div class="cp-day-row ${d.checked ? 'row-checked' : ''}">
+                    <span class="d-label">J-${d.day < 10 ? '0' + d.day : d.day}</span>
+                    <div>
+                        <span class="d-end mono">$${d.end.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        <span class="d-sub mono">Départ : $${d.start.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    </div>
+                    <div>
+                        <span class="d-profit mono">+${((d.end - d.start) / d.start * 100).toFixed(2)}%</span>
+                        <span class="d-sub mono">+$${d.profit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    </div>
+                    <div class="d-check">
+                        <input type="checkbox" class="day-checkbox" ${d.checked ? 'checked' : ''} onchange="toggleDayCheck(${d.day}, this.checked)">
+                    </div>
+                </div>
+            `;
+
+            colLeft.innerHTML = daysData.slice(0, 15).map(renderRow).join('');
+            colRight.innerHTML = daysData.slice(15, 30).map(renderRow).join('');
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function toggleDayCheck(day, isChecked) {
+            appState.cp.checkedDays[day] = isChecked;
+            saveState();
+            renderCompounder();
+        }
+
+        function resetCompounderChecks() {
+            if (confirm("Réinitialiser toutes les cases cochées de la feuille de route ?")) {
+                appState.cp.checkedDays = {};
+                saveState();
+                renderCompounder();
+            }
+        }
+
+        /* ============================================================================
+           4. NAVIGATION & UTILITAIRES
+           ============================================================================ */
+        function switchTab(tabId) {
+            appState.activeTab = tabId;
+            const btnTrader = document.getElementById('tab-btn-trader');
+            const btnCompounder = document.getElementById('tab-btn-compounder');
+            const viewTrader = document.getElementById('view-trader');
+            const viewCompounder = document.getElementById('view-compounder');
+
+            if (tabId === 'trader') {
+                btnTrader.classList.add('active');
+                btnCompounder.classList.remove('active');
+                viewTrader.classList.remove('hidden');
+                viewCompounder.classList.add('hidden');
+                renderTradeManager();
+            } else {
+                btnTrader.classList.remove('active');
+                btnCompounder.classList.add('active');
+                viewTrader.classList.add('hidden');
+                viewCompounder.classList.remove('hidden');
+                renderCompounder();
+            }
+            saveState();
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function toggleOfflineModal(show) {
+            const el = document.getElementById('offline-modal');
+            if (show) el.classList.remove('hidden');
+            else el.classList.add('hidden');
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function exportBackup() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `kabuto_system_backup_${new Date().toISOString().slice(0, 10)}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        function importBackup(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if (parsed.tm && parsed.cp) {
+                        appState = parsed;
+                        saveState();
+                        switchTab(appState.activeTab || 'trader');
+                        alert("✅ Sauvegarde restaurée avec succès !");
+                    } else {
+                        alert("⚠️ Format de fichier de sauvegarde invalide.");
+                    }
+                } catch (err) {
+                    alert("⚠️ Erreur lors de la lecture du fichier JSON.");
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        // Initialisation
+        window.addEventListener('DOMContentLoaded', () => {
+            loadState();
+            switchTab(appState.activeTab || 'trader');
+            if (window.lucide) lucide.createIcons();
+        });
+    </script>
+</body>
+</html>

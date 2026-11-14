@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "KABUTO'S System — Pocket Option Bridge",
+  "version": "2.0",
+  "description": "Gestion de capital combinatoire, Compounder 30 jours et automatisation en overlay sur Pocket Option.",
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "*://*.pocketoption.com/*",
+    "*://*.po.trade/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.pocketoption.com/*",
+        "*://*.po.trade/*"
+      ],
+      "js": [
+        "pocket_bridge.js",
+        "overlay.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "index.html",
+        "logo.png"
+      ],
+      "matches": [
+        "*://*.pocketoption.com/*",
+        "*://*.po.trade/*"
+      ]
+    }
+  ]
+}

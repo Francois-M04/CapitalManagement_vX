@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/jpeg" href="logo.png">
+    <title>Capital Management Trades — Pocket Option Bridge</title>
+    <style>
+        :root {
+            --bg-main: #0b1120;
+            --bg-card: #131c31;
+            --bg-input: #090e1a;
+            --bg-hover: #1e293b;
+            --border: #24324d;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --emerald: #10b981;
+            --emerald-dark: #059669;
+            --emerald-bg: rgba(16, 185, 129, 0.12);
+            --rose: #f43f5e;
+            --rose-dark: #e11d48;
+            --rose-bg: rgba(244, 63, 94, 0.12);
+            --amber: #f59e0b;
+            --amber-bg: rgba(245, 158, 11, 0.14);
+            --teal: #2dd4bf;
+            --radius: 14px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-main); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+        header {
+            background: rgba(19, 28, 49, 0.95);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .header-inner {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0.65rem 0.9rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.6rem;
+        }
+        .brand { display: flex; align-items: center; gap: 0.55rem; }
+        .brand-title h1 { font-size: 0.95rem; font-weight: 700; }
+        .brand-title span { font-size: 0.7rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.3rem; }
+        .dot-online { width: 7px; height: 7px; border-radius: 50%; background: var(--emerald); display: inline-block; }
+
+        .nav-tabs {
+            display: flex;
+            background: var(--bg-input);
+            padding: 0.2rem;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+        .tab-btn {
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            padding: 0.4rem 0.75rem;
+            border-radius: 8px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+        .tab-btn.active { background: var(--emerald-dark); color: #fff; }
+
+        .header-actions { display: flex; align-items: center; gap: 0.4rem; }
+        .btn-outline {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 0.35rem 0.6rem;
+            border-radius: 8px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-outline:hover { color: var(--text-main); border-color: #475569; }
+
+        main {
+            max-width: 1280px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0.9rem;
+            flex-grow: 1;
+        }
+        .hidden { display: none !important; }
+
+        .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(175px, 1fr)); gap: 0.7rem; }
+        .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.7rem; }
+        .grid-2-1 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 0.9rem; }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 0.85rem;
+        }
+        .card-label {
+            font-size: 0.68rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            margin-bottom: 0.3rem;
+            display: block;
+        }
+        .input-control, .select-control {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0.45rem 0.65rem;
+            border-radius: 9px;
+            font-size: 0.88rem;
+            font-weight: 700;
+            outline: none;
+        }
+        .input-control:focus, .select-control:focus { border-color: var(--emerald); }
+
+        .kpi-val { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.02em; }
+        .kpi-sub { font-size: 0.72rem; color: var(--text-muted); margin-top: 0.15rem; display: block; }
+        .text-emerald { color: var(--emerald); }
+        .text-rose { color: var(--rose); }
+        .text-teal { color: var(--teal); }
+
+        .banner {
+            padding: 0.75rem 0.95rem;
+            border-radius: var(--radius);
+            border: 1px solid;
+            margin-bottom: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .banner-info { background: rgba(45, 212, 191, 0.08); border-color: rgba(45, 212, 191, 0.3); color: #ccfbf1; }
+        .banner-success { background: var(--emerald-bg); border-color: rgba(16, 185, 129, 0.45); color: #d1fae5; }
+        .banner-danger { background: var(--rose-bg); border-color: rgba(244, 63, 94, 0.45); color: #ffe4e6; }
+        .banner-warning { background: var(--amber-bg); border-color: rgba(245, 158, 11, 0.45); color: #fef3c7; }
+
+        .exec-box {
+            background: linear-gradient(145deg, #16223b, #0e1629);
+            border: 1px solid #2d4063;
+            border-radius: 14px;
+            padding: 1rem;
+            margin: 0.85rem 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+        }
+        .badge-pill {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 999px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            background: var(--emerald-bg);
+            color: var(--emerald);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        .btn-group { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        .btn {
+            border: none;
+            padding: 0.7rem 1rem;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+        }
+        .btn:active { transform: scale(0.98); }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-win { background: var(--emerald-dark); color: #fff; }
+        .btn-loss { background: var(--rose-dark); color: #fff; }
+        .btn-secondary { background: #263552; color: #e2e8f0; }
+        .btn-call { background: var(--emerald-dark); color: #fff; flex: 1; font-size: 0.95rem; }
+        .btn-call:hover:not(:disabled) { background: var(--emerald); }
+        .btn-put { background: var(--rose-dark); color: #fff; flex: 1; font-size: 0.95rem; }
+        .btn-put:hover:not(:disabled) { background: var(--rose); }
+
+        .table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.8rem; }
+        thead th {
+            background: var(--bg-input);
+            color: var(--text-muted);
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            padding: 0.6rem 0.7rem;
+            border-bottom: 1px solid var(--border);
+        }
+        tbody td { padding: 0.55rem 0.7rem; border-bottom: 1px solid var(--border); }
+        tr.row-active { background: rgba(16, 185, 129, 0.09) !important; }
+        tr.row-active td:first-child { border-left: 3px solid var(--emerald); }
+
+        .tag-w { background: var(--emerald-bg); color: var(--emerald); padding: 0.15rem 0.45rem; border-radius: 5px; font-weight: 700; font-size: 0.7rem; }
+        .tag-l { background: var(--rose-bg); color: var(--rose); padding: 0.15rem 0.45rem; border-radius: 5px; font-weight: 700; font-size: 0.7rem; }
+        .tag-wait { background: rgba(148, 163, 184, 0.12); color: var(--text-muted); padding: 0.15rem 0.45rem; border-radius: 5px; font-weight: 600; font-size: 0.7rem; }
+
+        .day-checkbox { width: 18px; height: 18px; accent-color: var(--emerald); cursor: pointer; }
+        .progress-track { width: 100%; height: 8px; background: var(--bg-input); border-radius: 999px; overflow: hidden; border: 1px solid var(--border); margin-top: 0.4rem; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--emerald-dark), var(--teal)); width: 0%; transition: width 0.3s ease; }
+        .cp-two-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0.75rem; margin-top: 0.4rem; }
+        .cp-col { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--bg-main); }
+        .cp-col-head { background: var(--bg-input); color: var(--text-muted); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; padding: 0.5rem 0.7rem; border-bottom: 1px solid var(--border); }
+        .cp-col-body { max-height: 440px; overflow-y: auto; }
+        .cp-day-row { display: grid; grid-template-columns: 42px 1fr 1fr 38px; align-items: center; gap: 0.35rem; padding: 0.45rem 0.6rem; border-bottom: 1px solid var(--border); font-size: 0.78rem; }
+        .cp-day-row.row-checked { background: rgba(16, 185, 129, 0.11) !important; }
+        .cp-day-row.row-checked .d-label { text-decoration: line-through; color: var(--emerald); }
+        .cp-day-row .d-end { font-weight: 800; color: var(--teal); }
+        .cp-day-row .d-sub { display: block; font-size: 0.65rem; color: var(--text-muted); }
+
+        #blocker-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(9, 14, 26, 0.97);
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 1.5rem;
+        }
+        .blocker-card {
+            background: var(--bg-card);
+            border: 2px solid var(--rose);
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 460px;
+            width: 100%;
+            box-shadow: 0 15px 45px rgba(244, 63, 94, 0.3);
+        }
+        .countdown-timer {
+            font-size: 2.6rem;
+            font-weight: 800;
+            color: var(--rose);
+            margin: 1rem 0;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="blocker-overlay" class="hidden">
+        <div class="blocker-card">
+            <span class="badge-pill" style="background: var(--rose-bg); color: var(--rose); border-color: var(--rose);">🛑 Objectif de sessions atteint</span>
+            <h2 style="font-size: 1.4rem; margin-top: 0.75rem;">Pocket Option est bloqué durant <span id="lbl-block-hours">12</span> heures</h2>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">Félicitations ! Votre quota de sessions gagnantes est validé. L'accès au trading est verrouillé pour protéger votre capital.</p>
+            <div id="countdown-display" class="countdown-timer">12:00:00</div>
+            <p style="font-size: 0.75rem; color: var(--text-muted);">Déverrouillage automatique à la fin du compte à rebours.</p>
+        </div>
+    </div>
+
+    <header>
+        <div class="header-inner">
+            <div class="brand">
+                <div class="brand-title">
+                    <h1>KABUTO'S System</h1>
+                    <span><i class="dot-online"></i> <span id="po-conn-status">Pocket Option Bridge Prêt</span></span>
+                </div>
+            </div>
+
+            <nav class="nav-tabs">
+                <button id="tab-btn-trader" class="tab-btn active" onclick="switchTab('trader')">📊 Trade Manager</button>
+                <button id="tab-btn-compounder" class="tab-btn" onclick="switchTab('compounder')">📈 30 Jours</button>
+            </nav>
+
+            <div class="header-actions">
+                <button class="btn-outline" onclick="exportBackup()">💾</button>
+                <button class="btn-outline" onclick="document.getElementById('import-file').click()">📂</button>
+                <input type="file" id="import-file" accept=".json" class="hidden" onchange="importBackup(event)">
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section id="view-trader">
+            <div class="banner banner-info">
+                <div>
+                    <strong style="font-size: 0.86rem;">Objectif : <span id="lbl-target-sessions-progress" class="text-emerald">0 / 10</span> sessions Win</strong>
+                    <p id="status-desc" style="font-size: 0.74rem; opacity: 0.9;">Mise synchronisée automatiquement avec Pocket Option.</p>
+                </div>
+                <button class="btn btn-secondary" style="padding: 0.35rem 0.7rem; font-size: 0.75rem;" onclick="resetAllSessions()">🔄 Reset</button>
+            </div>
+
+            <div id="min-stake-warning" class="banner banner-warning hidden">
+                <p id="min-stake-msg" style="font-size: 0.75rem;"></p>
+            </div>
+
+            <div class="grid-4" style="margin-bottom: 0.75rem;">
+                <div class="card">
+                    <label class="card-label" for="tm-capital">Capital Pocket ($)</label>
+                    <input type="number" id="tm-capital" class="input-control" value="50.00" min="1" step="0.5" oninput="handleParamChange()">
+                </div>
+                <div class="card">
+                    <label class="card-label" for="tm-payout">Payout (%)</label>
+                    <input type="number" id="tm-payout" class="input-control" value="92" min="50" max="100" step="1" oninput="handleParamChange()">
+                </div>
+                <div class="card">
+                    <label class="card-label" for="tm-total-trades">Total Trades (Max)</label>
+                    <select id="tm-total-trades" class="select-control" onchange="handleParamChange()">
+                        <option value="2">2 Trades</option>
+                        <option value="3">3 Trades</option>
+                        <option value="4">4 Trades</option>
+                        <option value="5" selected>5 Trades</option>
+                        <option value="6">6 Trades</option>
+                        <option value="7">7 Trades</option>
+                        <option value="8">8 Trades</option>
+                        <option value="9">9 Trades</option>
+                        <option value="10">10 Trades</option>
+                    </select>
+                </div>
+                <div class="card">
+                    <label class="card-label" for="tm-win-trades">Win Trades Requis</label>
+                    <select id="tm-win-trades" class="select-control" onchange="handleParamChange()">
+                        <option value="1" selected>1 Win</option>
+                        <option value="2">2 Wins</option>
+                        <option value="3">3 Wins</option>
+                        <option value="4">4 Wins</option>
+                        <option value="5">5 Wins</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid-2" style="margin-bottom: 0.75rem;">
+                <div class="card">
+                    <label class="card-label" for="tm-target-sessions">Sessions Objectif (Win)</label>
+                    <input type="number" id="tm-target-sessions" class="input-control" value="10" min="1" max="100" oninput="handleParamChange()">
+                </div>
+                <div class="card">
+                    <label class="card-label" for="tm-block-duration">Blocage après objectif (Heures)</label>
+                    <input type="number" id="tm-block-duration" class="input-control" value="12" min="1" max="72" oninput="handleParamChange()">
+                </div>
+            </div>
+
+            <div class="grid-4">
+                <div class="card">
+                    <span class="card-label">Gain Session</span>
+                    <div id="kpi-session-pct" class="kpi-val text-emerald">+2.59%</div>
+                    <span id="kpi-session-profit" class="kpi-sub">+$1.30</span>
+                </div>
+                <div class="card">
+                    <span class="card-label">Solde Courant</span>
+                    <div id="kpi-current-balance" class="kpi-val">$50.00</div>
+                    <span id="kpi-current-pnl" class="kpi-sub">P&L : $0.00</span>
+                </div>
+                <div class="card">
+                    <span class="card-label">Capital Visé</span>
+                    <div id="kpi-target-balance" class="kpi-val text-teal">$51.30</div>
+                    <span class="kpi-sub">Fin de session</span>
+                </div>
+                <div class="card">
+                    <span class="card-label">Série en cours</span>
+                    <div id="kpi-progress-trades" class="kpi-val">0 / 5</div>
+                    <span id="kpi-wins-count" class="kpi-sub">0W &bull; 0L</span>
+                </div>
+            </div>
+
+            <div class="exec-box">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <span class="badge-pill" id="exec-step-badge">Trade #1 sur 5</span>
+                        <h2 style="font-size: 1.45rem; font-weight: 800; margin-top: 0.3rem;">
+                            Mise : <span id="exec-stake" class="text-emerald">$1.41</span>
+                        </h2>
+                    </div>
+                    <div style="text-align:right;">
+                        <span class="card-label">Gain potentiel</span>
+                        <strong id="exec-win-return" class="text-teal" style="font-size:1.1rem;">+$1.30</strong>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button id="btn-call" class="btn btn-call" onclick="executeBridgeTrade('CALL')">📈 Acheter</button>
+                    <button id="btn-put" class="btn btn-put" onclick="executeBridgeTrade('PUT')">📉 Vendre</button>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #24324d; padding-top:0.6rem;">
+                    <span style="font-size:0.7rem; color:var(--text-muted);">Correction manuelle :</span>
+                    <div class="btn-group">
+                        <button class="btn btn-win" style="padding: 0.3rem 0.65rem; font-size: 0.72rem;" onclick="registerTrade('W')">✓ W</button>
+                        <button class="btn btn-loss" style="padding: 0.3rem 0.65rem; font-size: 0.72rem;" onclick="registerTrade('L')">✕ L</button>
+                        <button id="btn-undo" class="btn btn-secondary" style="padding: 0.3rem 0.65rem; font-size: 0.72rem;" onclick="undoLastTrade()" disabled>↩</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Statut</th>
+                                <th>Mise ($)</th>
+                                <th>P&L ($)</th>
+                                <th>Solde ($)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="session-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-compounder" class="hidden">
+            <div class="card" style="margin-bottom: 0.85rem;">
+                <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                    <h3 style="font-size: 0.9rem; font-weight: 700;">Plan sur 30 Jours</h3>
+                    <button class="btn-outline" onclick="syncFromTradeManager()">🔄 Sync Trade Manager (<span id="sync-pct-preview">2.59%</span>)</button>
+                </div>
+
+                <div class="grid-4">
+                    <div>
+                        <label class="card-label" for="cp-capital">Capital Initial ($)</label>
+                        <input type="number" id="cp-capital" class="input-control" value="50.00" min="1" step="1" oninput="renderCompounder()">
+                    </div>
+                    <div>
+                        <label class="card-label" for="cp-gain-pct">Gain / Session (%)</label>
+                        <input type="number" id="cp-gain-pct" class="input-control" value="2.591458" min="0.01" step="0.01" oninput="renderCompounder()">
+                    </div>
+                    <div>
+                        <label class="card-label" for="cp-sessions">Sessions / Jour</label>
+                        <input type="number" id="cp-sessions" class="input-control" value="5" min="1" max="50" step="1" oninput="renderCompounder()">
+                    </div>
+                    <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 10px; padding: 0.5rem 0.7rem;">
+                        <span class="card-label" style="color: var(--emerald);">Ratio Quotidien</span>
+                        <div id="cp-total-ratio" style="font-size: 1.2rem; font-weight: 800; color: var(--emerald);">12.96%</div>
+                        <span style="font-size: 0.68rem; color: var(--text-muted);" id="cp-effective-daily">+13.65% / jour</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-4" style="margin-bottom: 0.85rem;">
+                <div class="card">
+                    <span class="card-label">Capital J1</span>
+                    <div id="cp-kpi-start" class="kpi-val">$50.00</div>
+                </div>
+                <div class="card">
+                    <span class="card-label">Objectif J30</span>
+                    <div id="cp-kpi-end" class="kpi-val text-emerald">$1,930.00</div>
+                    <span id="cp-kpi-profit-total" class="kpi-sub">+$1,880.00</span>
+                </div>
+                <div class="card">
+                    <span class="card-label">Validé</span>
+                    <div id="cp-kpi-checked-cap" class="kpi-val text-teal">$50.00</div>
+                    <span id="cp-kpi-checked-days" class="kpi-sub">0 / 30 jours</span>
+                </div>
+                <div class="card">
+                    <span class="card-label">Progression</span>
+                    <div id="cp-kpi-progress-pct" class="kpi-val">0.0%</div>
+                    <div class="progress-track"><div id="cp-progress-bar" class="progress-fill"></div></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+                    <h3 style="font-size: 0.88rem; font-weight: 700;">Feuille de Route 30 Jours</h3>
+                    <button class="btn-outline" onclick="resetCompounderChecks()">🔄 Reset Cases</button>
+                </div>
+                <div class="cp-two-cols">
+                    <div class="cp-col">
+                        <div class="cp-col-head">Jours 1 à 15</div>
+                        <div class="cp-col-body" id="compounder-col-left"></div>
+                    </div>
+                    <div class="cp-col">
+                        <div class="cp-col-head">Jours 16 à 30</div>
+                        <div class="cp-col-body" id="compounder-col-right"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const STORAGE_KEY = 'srm_pocket_bridge_v2';
+        let currentCalculatedStake = 1.00;
+        let isBlockerActiveOnParent = false;
+        let isRendering = false; // Garde-fou contre les boucles infinies
+
+        let appState = {
+            activeTab: 'trader',
+            tm: {
+                capital: 50.00,
+                payout: 92,
+                totalTrades: 5,
+                winTrades: 1,
+                targetSessions: 10,
+                blockDurationHours: 12,
+                completedSessionsCount: 0,
+                blockUntilTimestamp: null,
+                results: []
+            },
+            cp: {
+                capital: 50.00,
+                gainPct: 2.5914581,
+                sessionsPerDay: 5,
+                checkedDays: {}
+            }
+        };
+
+        // Communication avec l'extension
+        function notifyExtension(type, payload = {}) {
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({ source: 'KABUTO_APP', type, ...payload }, '*');
+            }
+        }
+
+        // Réception des événements
+        window.addEventListener('message', (event) => {
+            if (!event.data || event.data.source !== 'POCKET_BRIDGE') return;
+
+            if (event.data.type === 'BALANCE_UPDATE' && typeof event.data.balance === 'number') {
+                document.getElementById('po-conn-status').innerText = `Pocket Connecté ($${event.data.balance.toFixed(2)})`;
+                if (appState.tm.results.length === 0 && Math.abs(appState.tm.capital - event.data.balance) > 0.01) {
+                    appState.tm.capital = event.data.balance;
+                    saveState();
+                    renderTradeManager();
+                }
+            }
+
+            if (event.data.type === 'TRADE_RESULT' && (event.data.result === 'W' || event.data.result === 'L')) {
+                registerTrade(event.data.result);
+            }
+        });
+
+        function loadState() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (parsed.tm) appState.tm = { ...appState.tm, ...parsed.tm };
+                    if (parsed.cp) appState.cp = { ...appState.cp, ...parsed.cp };
+                    if (parsed.activeTab) appState.activeTab = parsed.activeTab;
+                }
+            } catch (e) {}
+        }
+
+        function saveState() {
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(appState)); } catch (e) {}
+        }
+
+        function checkBlockerStatus() {
+            const now = Date.now();
+            const blockerEl = document.getElementById('blocker-overlay');
+            if (appState.tm.blockUntilTimestamp && now < appState.tm.blockUntilTimestamp) {
+                blockerEl.classList.remove('hidden');
+                document.getElementById('lbl-block-hours').innerText = appState.tm.blockDurationHours;
+                if (!isBlockerActiveOnParent) {
+                    isBlockerActiveOnParent = true;
+                    notifyExtension('SET_BLOCKER_MODE', { blocked: true });
+                }
+                const remaining = appState.tm.blockUntilTimestamp - now;
+                const h = Math.floor(remaining / (1000 * 60 * 60));
+                const m = Math.floor((remaining / (1000 * 60)) % 60);
+                const s = Math.floor((remaining / 1000) % 60);
+                document.getElementById('countdown-display').innerText =
+                    `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+            } else {
+                blockerEl.classList.add('hidden');
+                if (isBlockerActiveOnParent) {
+                    isBlockerActiveOnParent = false;
+                    appState.tm.blockUntilTimestamp = null;
+                    appState.tm.completedSessionsCount = 0;
+                    saveState();
+                    notifyExtension('SET_BLOCKER_MODE', { blocked: false });
+                    renderTradeManager();
+                }
+            }
+        }
+
+        function buildCombinatorialMatrix(N, W, payoutPct) {
+            const P = payoutPct / 100;
+            const M = Array.from({ length: N + 1 }, () => Array(W + 1).fill(0));
+            for (let n = 0; n <= N; n++) M[n][0] = 1;
+            for (let n = 1; n <= N; n++) {
+                for (let w = 1; w <= W; w++) {
+                    if (n >= w) M[n][w] = (M[n - 1][w - 1] + P * M[n - 1][w]) / (1 + P);
+                }
+            }
+            const baseProb = M[N][W];
+            return { M, P, sessionGainRate: baseProb > 0 ? (1 - baseProb) / baseProb : 0 };
+        }
+
+        function handleParamChange() {
+            const totalTrades = parseInt(document.getElementById('tm-total-trades').value) || 5;
+            const winSelect = document.getElementById('tm-win-trades');
+            Array.from(winSelect.options).forEach(opt => opt.disabled = parseInt(opt.value) > totalTrades);
+            let winTrades = parseInt(winSelect.value) || 1;
+            if (winTrades > totalTrades) { winTrades = totalTrades; winSelect.value = winTrades; }
+
+            appState.tm.capital = Math.max(1, parseFloat(document.getElementById('tm-capital').value) || 50);
+            appState.tm.payout = Math.min(100, Math.max(1, parseFloat(document.getElementById('tm-payout').value) || 92));
+            appState.tm.totalTrades = totalTrades;
+            appState.tm.winTrades = winTrades;
+            appState.tm.targetSessions = Math.max(1, parseInt(document.getElementById('tm-target-sessions').value) || 10);
+            appState.tm.blockDurationHours = Math.max(1, parseInt(document.getElementById('tm-block-duration').value) || 12);
+
+            if (appState.tm.results.length > totalTrades) {
+                appState.tm.results = appState.tm.results.slice(0, totalTrades);
+            }
+            saveState();
+            renderTradeManager();
+        }
+
+        function renderTradeManager() {
+            if (isRendering) return; // Évite les boucles infinies
+            isRendering = true;
+
+            try {
+                checkBlockerStatus();
+                const { capital, payout, totalTrades, winTrades, targetSessions, completedSessionsCount, results } = appState.tm;
+
+                document.getElementById('tm-capital').value = capital;
+                document.getElementById('tm-payout').value = payout;
+                document.getElementById('tm-total-trades').value = totalTrades;
+                document.getElementById('tm-win-trades').value = winTrades;
+                document.getElementById('tm-target-sessions').value = targetSessions;
+                document.getElementById('tm-block-duration').value = appState.tm.blockDurationHours;
+                document.getElementById('lbl-target-sessions-progress').innerText = `${completedSessionsCount} / ${targetSessions}`;
+
+                const { M, P, sessionGainRate } = buildCombinatorialMatrix(totalTrades, winTrades, payout);
+                const sessionGainPct = sessionGainRate * 100;
+                const targetProfitDollar = capital * sessionGainRate;
+                const targetFinalBalance = capital + targetProfitDollar;
+
+                document.getElementById('sync-pct-preview').innerText = sessionGainPct.toFixed(2) + '%';
+                document.getElementById('kpi-session-pct').innerText = `+${sessionGainPct.toFixed(2)}%`;
+                document.getElementById('kpi-session-profit').innerText = `+$${targetProfitDollar.toFixed(2)}`;
+                document.getElementById('kpi-target-balance').innerText = `$${targetFinalBalance.toFixed(2)}`;
+
+                let balance = capital, winsSoFar = 0, lossesSoFar = 0, anyBelowMin = false, firstRawStake = 0;
+                let sessionOutcome = 'IN_PROGRESS';
+                const rowsData = [];
+
+                for (let i = 0; i < totalTrades; i++) {
+                    const nRem = totalTrades - i;
+                    const wRem = winTrades - winsSoFar;
+                    if (sessionOutcome !== 'IN_PROGRESS') {
+                        rowsData.push({ index: i + 1, status: 'SKIPPED', stake: 0, pnl: 0, balanceAfter: balance });
+                        continue;
+                    }
+
+                    const num = M[nRem - 1][wRem - 1] - M[nRem - 1][wRem];
+                    const den = (1 + P) * M[nRem][wRem];
+                    let rawStake = den > 0 ? balance * (num / den) : 0;
+                    if (i === 0) firstRawStake = rawStake;
+                    let finalStake = rawStake;
+                    if (finalStake < 1.00) { anyBelowMin = true; finalStake = Math.min(1.00, balance); }
+                    finalStake = Math.round(Math.min(finalStake, balance) * 100) / 100;
+
+                    if (i < results.length) {
+                        const res = results[i];
+                        let pnl = res === 'W' ? Math.round(finalStake * P * 100) / 100 : -finalStake;
+                        balance = Math.round((balance + pnl) * 100) / 100;
+                        if (res === 'W') winsSoFar++; else lossesSoFar++;
+                        rowsData.push({ index: i + 1, status: res, stake: finalStake, pnl, balanceAfter: balance });
+
+                        if (winsSoFar >= winTrades) sessionOutcome = 'WON';
+                        else if ((totalTrades - (i + 1)) < (winTrades - winsSoFar) || balance < 1.00) sessionOutcome = 'FAILED';
+                    } else {
+                        const isNext = (i === results.length);
+                        rowsData.push({
+                            index: i + 1,
+                            status: isNext ? 'NEXT' : 'PENDING',
+                            stake: isNext ? finalStake : null,
+                            pnl: isNext ? Math.round(finalStake * P * 100) / 100 : null,
+                            balanceAfter: null
+                        });
+                    }
+                }
+
+                const minWarnEl = document.getElementById('min-stake-warning');
+                if (anyBelowMin) {
+                    document.getElementById('min-stake-msg').innerText = `⚠️ Plancher $1.00 appliqué (mise théorique $${firstRawStake.toFixed(2)}).`;
+                    minWarnEl.classList.remove('hidden');
+                } else {
+                    minWarnEl.classList.add('hidden');
+                }
+
+                const currentPnl = balance - capital;
+                document.getElementById('kpi-current-balance').innerText = `$${balance.toFixed(2)}`;
+                document.getElementById('kpi-current-pnl').innerText = `P&L : ${currentPnl >= 0 ? '+' : ''}$${currentPnl.toFixed(2)}`;
+                document.getElementById('kpi-progress-trades').innerText = `${results.length} / ${totalTrades}`;
+                document.getElementById('kpi-wins-count').innerText = `${winsSoFar}W • ${lossesSoFar}L`;
+                document.getElementById('btn-undo').disabled = results.length === 0;
+
+                const nextRow = rowsData.find(r => r.status === 'NEXT');
+                if (nextRow) {
+                    currentCalculatedStake = nextRow.stake;
+                    document.getElementById('exec-step-badge').innerText = `Trade #${nextRow.index} sur ${totalTrades}`;
+                    document.getElementById('exec-stake').innerText = `$${nextRow.stake.toFixed(2)}`;
+                    document.getElementById('exec-win-return').innerText = `+$${nextRow.pnl.toFixed(2)}`;
+                    notifyExtension('SET_STAKE', { amount: currentCalculatedStake });
+                }
+
+                // Gestion de fin de session sans boucle infinie
+                if (sessionOutcome === 'WON') {
+                    appState.tm.completedSessionsCount++;
+                    appState.tm.capital = balance;
+                    appState.tm.results = [];
+                    if (appState.tm.completedSessionsCount >= targetSessions) {
+                        appState.tm.blockUntilTimestamp = Date.now() + (appState.tm.blockDurationHours * 3600 * 1000);
+                    }
+                    saveState();
+                    setTimeout(() => { isRendering = false; renderTradeManager(); }, 50);
+                    return;
+                } else if (sessionOutcome === 'FAILED') {
+                    appState.tm.capital = balance;
+                    appState.tm.results = [];
+                    saveState();
+                    setTimeout(() => { isRendering = false; renderTradeManager(); }, 50);
+                    return;
+                }
+
+                document.getElementById('session-table-body').innerHTML = rowsData.map(r => `
+                    <tr class="${r.status === 'NEXT' ? 'row-active' : ''}">
+                        <td><strong>#${r.index}</strong></td>
+                        <td>${r.status === 'W' ? '<span class="tag-w">WIN</span>' : r.status === 'L' ? '<span class="tag-l">LOSS</span>' : r.status === 'NEXT' ? '<span class="badge-pill">Actif</span>' : '<span class="tag-wait">Attente</span>'}</td>
+                        <td style="color:var(--emerald); font-weight:700;">${r.stake ? '$' + r.stake.toFixed(2) : '—'}</td>
+                        <td>${r.pnl ? (r.pnl > 0 ? '+' : '') + '$' + r.pnl.toFixed(2) : '—'}</td>
+                        <td>${r.balanceAfter ? '$' + r.balanceAfter.toFixed(2) : '—'}</td>
+                    </tr>
+                `).join('');
+            } finally {
+                isRendering = false;
+            }
+        }
+
+        function executeBridgeTrade(direction) {
+            notifyExtension('EXECUTE_TRADE', {
+                direction: direction,
+                amount: currentCalculatedStake
+            });
+        }
+
+        function registerTrade(type) {
+            if (appState.tm.results.length >= appState.tm.totalTrades) return;
+            appState.tm.results.push(type);
+            saveState();
+            renderTradeManager();
+        }
+
+        function undoLastTrade() {
+            if (appState.tm.results.length === 0) return;
+            appState.tm.results.pop();
+            saveState();
+            renderTradeManager();
+        }
+
+        function resetAllSessions() {
+            appState.tm.results = [];
+            appState.tm.completedSessionsCount = 0;
+            appState.tm.blockUntilTimestamp = null;
+            saveState();
+            renderTradeManager();
+        }
+
+        function syncFromTradeManager() {
+            const { capital, payout, totalTrades, winTrades } = appState.tm;
+            const { sessionGainRate } = buildCombinatorialMatrix(totalTrades, winTrades, payout);
+            appState.cp.capital = capital;
+            appState.cp.gainPct = parseFloat((sessionGainRate * 100).toFixed(6));
+            saveState();
+            renderCompounder();
+        }
+
+        function renderCompounder() {
+            const capInput = parseFloat(document.getElementById('cp-capital').value);
+            const gainInput = parseFloat(document.getElementById('cp-gain-pct').value);
+            const sessInput = parseInt(document.getElementById('cp-sessions').value);
+
+            appState.cp.capital = !isNaN(capInput) && capInput > 0 ? capInput : 50;
+            appState.cp.gainPct = !isNaN(gainInput) && gainInput >= 0 ? gainInput : 2.5914581;
+            appState.cp.sessionsPerDay = !isNaN(sessInput) && sessInput >= 1 ? sessInput : 5;
+            saveState();
+
+            const { capital, gainPct, sessionsPerDay, checkedDays } = appState.cp;
+            const totalRatioLinear = gainPct * sessionsPerDay;
+            const dailyCompoundFactor = Math.pow(1 + (gainPct / 100), sessionsPerDay);
+            const effectiveDailyPct = (dailyCompoundFactor - 1) * 100;
+
+            document.getElementById('cp-total-ratio').innerText = `${totalRatioLinear.toFixed(2)}%`;
+            document.getElementById('cp-effective-daily').innerText = `+${effectiveDailyPct.toFixed(2)}% / jour`;
+
+            let currentCap = capital, leftHtml = '', rightHtml = '', checkedCount = 0, validatedCapital = capital;
+            for (let day = 1; day <= 30; day++) {
+                const startCap = currentCap;
+                const endCap = startCap * dailyCompoundFactor;
+                const dailyProfit = endCap - startCap;
+                const isChecked = !!checkedDays[day];
+                if (isChecked) { checkedCount++; validatedCapital = endCap; }
+
+                const rowHtml = `
+                    <div class="cp-day-row ${isChecked ? 'row-checked' : ''}">
+                        <span class="d-label">J${day}</span>
+                        <span>$${startCap.toFixed(2)}<span class="d-sub">+$${dailyProfit.toFixed(2)}</span></span>
+                        <span class="d-end">$${endCap.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        <span><input type="checkbox" class="day-checkbox" ${isChecked ? 'checked' : ''} onchange="toggleDayCheck(${day}, this.checked)"></span>
+                    </div>`;
+                if (day <= 15) leftHtml += rowHtml; else rightHtml += rowHtml;
+                currentCap = endCap;
+            }
+
+            document.getElementById('compounder-col-left').innerHTML = leftHtml;
+            document.getElementById('compounder-col-right').innerHTML = rightHtml;
+
+            const totalProfit30 = currentCap - capital;
+            const progressPct = (checkedCount / 30) * 100;
+            document.getElementById('cp-kpi-start').innerText = `$${capital.toFixed(2)}`;
+            document.getElementById('cp-kpi-end').innerText = `$${currentCap.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            document.getElementById('cp-kpi-profit-total').innerText = `+$${totalProfit30.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            document.getElementById('cp-kpi-checked-cap').innerText = `$${validatedCapital.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            document.getElementById('cp-kpi-checked-days').innerText = `${checkedCount} / 30 jours`;
+            document.getElementById('cp-kpi-progress-pct').innerText = `${progressPct.toFixed(1)}%`;
+            document.getElementById('cp-progress-bar').style.width = `${progressPct}%`;
+        }
+
+        function toggleDayCheck(day, isChecked) {
+            if (isChecked) appState.cp.checkedDays[day] = true; else delete appState.cp.checkedDays[day];
+            saveState();
+            renderCompounder();
+        }
+
+        function resetCompounderChecks() {
+            appState.cp.checkedDays = {};
+            saveState();
+            renderCompounder();
+        }
+
+        function switchTab(tab) {
+            appState.activeTab = tab;
+            saveState();
+            document.getElementById('view-trader').classList.toggle('hidden', tab !== 'trader');
+            document.getElementById('view-compounder').classList.toggle('hidden', tab !== 'compounder');
+            document.getElementById('tab-btn-trader').classList.toggle('active', tab === 'trader');
+            document.getElementById('tab-btn-compounder').classList.toggle('active', tab === 'compounder');
+            if (tab === 'trader') renderTradeManager(); else renderCompounder();
+        }
+
+        function exportBackup() {
+            const a = document.createElement('a');
+            a.href = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(appState, null, 2));
+            a.download = `KABUTO_Backup_${new Date().toISOString().slice(0, 10)}.json`;
+            a.click();
+        }
+
+        function importBackup(e) {
+            const reader = new FileReader();
+            reader.onload = function (evt) {
+                try {
+                    const imported = JSON.parse(evt.target.result);
+                    if (imported.tm && imported.cp) {
+                        appState = imported;
+                        saveState();
+                        switchTab(appState.activeTab || 'trader');
+                    }
+                } catch (err) {}
+            };
+            reader.readAsText(e.target.files[0]);
+        }
+
+        window.onload = function () {
+            loadState();
+            switchTab(appState.activeTab || 'trader');
+            setInterval(checkBlockerStatus, 1000);
+        };
+    </script>
+</body>
+</html>

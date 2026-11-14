@@ -584,15 +584,15 @@
                 <div class="grid-4">
                     <div>
                         <label class="card-label" for="cp-capital">Capital Initial ($)</label>
-                        <input type="number" id="cp-capital" class="input-control" value="40.00" min="1" step="1" oninput="renderCompounder()">
+                        <input type="number" id="cp-capital" class="input-control" value="40.00" min="1" step="1" oninput="handleCompounderInput()">
                     </div>
                     <div>
                         <label class="card-label" for="cp-gain-pct">Account Gain / Session (%)</label>
-                        <input type="number" id="cp-gain-pct" class="input-control" value="2.591458" min="0.01" step="0.01" oninput="renderCompounder()">
+                        <input type="number" id="cp-gain-pct" class="input-control" value="2.591458" min="0.01" step="0.01" oninput="handleCompounderInput()">
                     </div>
                     <div>
                         <label class="card-label" for="cp-sessions">Daily Sessions (Sessions / Jour)</label>
-                        <input type="number" id="cp-sessions" class="input-control" value="5" min="1" max="50" step="1" oninput="renderCompounder()">
+                        <input type="number" id="cp-sessions" class="input-control" value="5" min="1" max="50" step="1" oninput="handleCompounderInput()">
                     </div>
                     <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 11px; padding: 0.65rem 0.9rem;">
                         <span class="card-label" style="color: var(--emerald); margin-bottom: 0.15rem;">Total Ratio (%) Quotidien</span>
@@ -674,7 +674,7 @@
 
     <script>
         /* ============================================================================
-           1. ALGORITHME COMBINATOIRE EXACT (MASANIELLO / ONGLET "ALGO" DU FICHIER)
+           1. ALGORITHME COMBINATOIRE EXACT
            ============================================================================ */
         const STORAGE_KEY = 'srm_v2_offline_state';
 
@@ -686,14 +686,14 @@
                 payout: 92,
                 totalTrades: 5,
                 winTrades: 1,
-                results: [], // tableau de 'W' ou 'L'
+                results: [],
                 completedLogs: []
             },
             cp: {
                 capital: 40.00,
                 gainPct: 2.5914581,
                 sessionsPerDay: 5,
-                checkedDays: {} // ex: { 1: true, 2: true }
+                checkedDays: {}
             }
         };
 
@@ -720,18 +720,6 @@
             }
         }
 
-        /**
-         * Construit la matrice combinatoire M(n, w) pour n trades restants et w victoires requises
-         * avec un payout P (ex: 0.92).
-         * M(n, 0) = 1
-         * M(n, w) = 0 si n < w
-         * M(n, w) = (M(n - 1, w - 1) + P * M(n - 1, w)) / (1 + P)
-         *
-         * Pour N=5, W=1, P=0.92 :
-         * Gain_Session = (1 - M(5, 1)) / M(5, 1) = 0.025914581 (2.5914581%)
-         * Pour N=4, W=1, P=0.92 :
-         * Gain_Session = (1 - M(4, 1)) / M(4, 1) = 0.055650159 (5.5650159%)
-         */
         function buildCombinatorialMatrix(N, W, payoutPct) {
             const P = payoutPct / 100;
             const M = Array.from({ length: N + 1 }, () => Array(W + 1).fill(0));
@@ -754,27 +742,19 @@
             return { M, P, sessionGainRate };
         }
 
-        /**
-         * Calcule la mise exacte à l'instant t (n trades restants, w victoires restantes, capital courant C_curr)
-         * Tout en appliquant la règle stricte des Options Binaires : Mise >= $1.00.
-         */
         function computeStepStake(M, P, n, w, currentBalance, targetBalance) {
             if (w <= 0 || n <= 0 || n < w || currentBalance <= 0) return { rawStake: 0, finalStake: 0, belowMin: false };
 
-            // Formule combinatoire exacte :
-            // Mise = C_curr * (M[n-1][w-1] - M[n-1][w]) / ((1 + P) * M[n][w])
             const numerator = M[n - 1][w - 1] - M[n - 1][w];
             const denominator = (1 + P) * M[n][w];
             let rawStake = denominator > 0 ? currentBalance * (numerator / denominator) : 0;
 
-            // Règle stricte Options Binaires : jamais moins de $1.00
             let belowMin = false;
             let finalStake = rawStake;
             if (finalStake < 1.00) {
                 belowMin = true;
                 finalStake = Math.min(1.00, currentBalance);
             }
-            // Ne jamais miser plus que le solde disponible
             finalStake = Math.min(finalStake, currentBalance);
 
             return {
@@ -793,7 +773,6 @@
             const totalTrades = parseInt(document.getElementById('tm-total-trades').value) || 5;
             const winSelect = document.getElementById('tm-win-trades');
 
-            // S'assurer que Win Trades <= Total Trades
             Array.from(winSelect.options).forEach(opt => {
                 opt.disabled = parseInt(opt.value) > totalTrades;
             });
@@ -808,7 +787,6 @@
             appState.tm.totalTrades = totalTrades;
             appState.tm.winTrades = winTrades;
 
-            // Si des résultats dépassent le nouveau totalTrades, on tronque
             if (appState.tm.results.length > totalTrades) {
                 appState.tm.results = appState.tm.results.slice(0, totalTrades);
             }
@@ -820,7 +798,6 @@
         function renderTradeManager() {
             const { capital, payout, totalTrades, winTrades, results } = appState.tm;
 
-            // Synchroniser les champs UI
             document.getElementById('tm-capital').value = capital;
             document.getElementById('tm-payout').value = payout;
             document.getElementById('tm-total-trades').value = totalTrades;
@@ -831,16 +808,13 @@
             const targetProfitDollar = capital * sessionGainRate;
             const targetFinalBalance = capital + targetProfitDollar;
 
-            // Mise à jour aperçu bouton sync dans Compounder
             document.getElementById('sync-pct-preview').innerText = sessionGainPct.toFixed(2) + '%';
 
-            // KPIs d'en-tête
             document.getElementById('kpi-session-pct').innerText = `+${sessionGainPct.toFixed(2)}%`;
             document.getElementById('kpi-session-profit').innerText = `Gain net cible : +$${targetProfitDollar.toFixed(2)}`;
             document.getElementById('kpi-target-balance').innerText = `$${targetFinalBalance.toFixed(2)}`;
             document.getElementById('lbl-win-req').innerText = winTrades;
 
-            // Simulation pas à pas des trades déjà enregistrés + projection des trades restants
             let balance = capital;
             let winsSoFar = 0;
             let lossesSoFar = 0;
@@ -848,7 +822,7 @@
             let firstRawStake = 0;
 
             const rowsData = [];
-            let sessionOutcome = 'IN_PROGRESS'; // 'IN_PROGRESS' | 'WON' | 'FAILED'
+            let sessionOutcome = 'IN_PROGRESS';
 
             for (let i = 0; i < totalTrades; i++) {
                 const nRemaining = totalTrades - i;
@@ -890,14 +864,12 @@
                         balanceAfter: balance
                     });
 
-                    // Vérifier si session terminée
                     if (winsSoFar >= winTrades) {
                         sessionOutcome = 'WON';
                     } else if ((totalTrades - (i + 1)) < (winTrades - winsSoFar) || balance < 1.00) {
                         sessionOutcome = 'FAILED';
                     }
                 } else {
-                    // Trade futur / en attente
                     const isNext = (i === results.length);
                     rowsData.push({
                         index: i + 1,
@@ -909,7 +881,6 @@
                 }
             }
 
-            // Alerte plancher $1.00 si la mise théorique initiale était < $1.00
             const minWarnEl = document.getElementById('min-stake-warning');
             if (anyBelowMin) {
                 const minCapNeeded = firstRawStake > 0 ? Math.ceil((capital / firstRawStake) * 100) / 100 : capital;
@@ -920,7 +891,6 @@
                 minWarnEl.classList.add('hidden');
             }
 
-            // Mise à jour Solde Courant & Progression
             const currentPnl = balance - capital;
             const currentPnlPct = capital > 0 ? (currentPnl / capital) * 100 : 0;
             const balEl = document.getElementById('kpi-current-balance');
@@ -932,7 +902,6 @@
             document.getElementById('kpi-progress-trades').innerText = `${results.length} / ${totalTrades}`;
             document.getElementById('kpi-wins-count').innerText = `${winsSoFar} victoire(s) • ${lossesSoFar} perte(s)`;
 
-            // Panneau d'Exécution Active
             const nextRow = rowsData.find(r => r.status === 'NEXT');
             const btnWin = document.getElementById('btn-win');
             const btnLoss = document.getElementById('btn-loss');
@@ -956,7 +925,6 @@
                 btnLoss.disabled = true;
             }
 
-            // Bannière de Statut
             const bannerEl = document.getElementById('session-status-banner');
             const statusTitle = document.getElementById('status-title');
             const statusDesc = document.getElementById('status-desc');
@@ -978,7 +946,6 @@
                 btnNextSess.classList.add('hidden');
             }
 
-            // Rendu du Tableau de Session
             const tbody = document.getElementById('session-table-body');
             tbody.innerHTML = rowsData.map(r => {
                 let statusHtml = '<span class="tag-wait">En attente</span>';
@@ -1031,7 +998,6 @@
         function startNewSession(capitalize) {
             const { capital, payout, totalTrades, winTrades, results } = appState.tm;
             if (results.length > 0) {
-                // Calculer le solde final de la session qui s'achève
                 const { M, P } = buildCombinatorialMatrix(totalTrades, winTrades, payout);
                 let bal = capital;
                 let wins = 0;
@@ -1089,39 +1055,63 @@
         }
 
         /* ============================================================================
-           3. LOGIQUE DU MODULE 2 : 30 DAYS COMPOUNDER (AVEC TOTAL RATIO & CHECKBOX)
+           3. LOGIQUE DU MODULE 2 : 30 DAYS COMPOUNDER (INDÉPENDANT)
            ============================================================================ */
         function syncFromTradeManager() {
+            // L'utilisateur a cliqué sur "Synchroniser", on copie les valeurs depuis le TM
             const { capital, payout, totalTrades, winTrades } = appState.tm;
             const { sessionGainRate } = buildCombinatorialMatrix(totalTrades, winTrades, payout);
+            
             appState.cp.capital = capital;
             appState.cp.gainPct = parseFloat((sessionGainRate * 100).toFixed(6));
+            
+            // Mise à jour de l'UI
+            document.getElementById('cp-capital').value = appState.cp.capital.toFixed(2);
+            document.getElementById('cp-gain-pct').value = appState.cp.gainPct;
+            
+            saveState();
+            renderCompounder();
+        }
+
+        function handleCompounderInput() {
+            // Cette fonction est appelée à chaque frappe dans les inputs du compounder
+            const capVal = document.getElementById('cp-capital').value;
+            const gainVal = document.getElementById('cp-gain-pct').value;
+            const sessVal = document.getElementById('cp-sessions').value;
+
+            // On met à jour l'état AVANT de render pour que la sauvegarde prenne ces valeurs
+            if (capVal !== '' && !isNaN(parseFloat(capVal))) appState.cp.capital = parseFloat(capVal);
+            if (gainVal !== '' && !isNaN(parseFloat(gainVal))) appState.cp.gainPct = parseFloat(gainVal);
+            if (sessVal !== '' && !isNaN(parseInt(sessVal))) appState.cp.sessionsPerDay = parseInt(sessVal);
+
             saveState();
             renderCompounder();
         }
 
         function renderCompounder() {
-            const capInput = parseFloat(document.getElementById('cp-capital').value);
-            const gainInput = parseFloat(document.getElementById('cp-gain-pct').value);
-            const sessInput = parseInt(document.getElementById('cp-sessions').value);
-
-            appState.cp.capital = !isNaN(capInput) && capInput > 0 ? capInput : 40;
-            appState.cp.gainPct = !isNaN(gainInput) && gainInput >= 0 ? gainInput : 2.5914581;
-            appState.cp.sessionsPerDay = !isNaN(sessInput) && sessInput >= 1 ? sessInput : 5;
-            saveState();
-
+            // IMPORTANT : On ne lit PAS les valeurs des inputs ici. 
+            // L'état appState est la seule source de vérité.
             const { capital, gainPct, sessionsPerDay, checkedDays } = appState.cp;
 
-            // Synchroniser inputs UI
-            document.getElementById('cp-capital').value = capital;
-            document.getElementById('cp-gain-pct').value = Number(gainPct.toFixed(4));
-            document.getElementById('cp-sessions').value = sessionsPerDay;
-
-            // TOTAL RATIO (%) = Account Gain (%) * Daily Sessions (ex: 2.59% * 5 = 12.96%)
+            // Calculs
             const totalRatioLinear = gainPct * sessionsPerDay;
-            // Facteur composé quotidien réel sur les N sessions de la journée : (1 + r)^sessionsPerDay
             const dailyCompoundFactor = Math.pow(1 + (gainPct / 100), sessionsPerDay);
             const effectiveDailyPct = (dailyCompoundFactor - 1) * 100;
+
+            // Mise à jour de l'affichage (les inputs sont déjà à jour si on vient de taper,
+            // sinon ils reflètent ce qu'il y a dans appState après un reload)
+            // On force la valeur des inputs UNIQUEMENT si on n'est pas en train de taper.
+            // (Ici, renderCompounder est appelé par handleCompounderInput pendant la frappe, 
+            // donc on ne veut pas écraser. On écrase seulement si on recharge la page).
+            if (document.activeElement !== document.getElementById('cp-capital')) {
+                document.getElementById('cp-capital').value = capital;
+            }
+            if (document.activeElement !== document.getElementById('cp-gain-pct')) {
+                document.getElementById('cp-gain-pct').value = Number(gainPct.toFixed(6));
+            }
+            if (document.activeElement !== document.getElementById('cp-sessions')) {
+                document.getElementById('cp-sessions').value = sessionsPerDay;
+            }
 
             document.getElementById('cp-total-ratio').innerText = `${totalRatioLinear.toFixed(2)}%`;
             document.getElementById('cp-effective-daily').innerText = `Composés (${sessionsPerDay} sess.) : +${effectiveDailyPct.toFixed(2)}% / jour`;
@@ -1262,6 +1252,8 @@
 
         window.onload = function() {
             loadState();
+            // On force l'affichage du Compounder à charger les valeurs sauvegardées.
+            // On le fait ici explicitement pour être sûr que appState est chargé avant render.
             switchTab(appState.activeTab || 'trader');
         };
     </script>
